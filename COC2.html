@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COC 2 - Set Up Computer Networks</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      color: #00e6e6;
+    }
+    .discussion {
+      max-width: 900px;
+      margin: 100px auto 50px auto;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .objective { margin-bottom: 40px; }
+    img, iframe {
+      display: block;
+      margin: 15px auto;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
+    }
+    iframe { 
+      width: 100%;
+      height: 500px; /* landscape view */
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #00e6e6;
+      color: #000;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .download-btn:hover { background: #00cccc; }
+    html, body { height: 100%; overflow-y: auto; }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar ul { margin: 0; padding: 0; list-style: none; display: flex; gap: 15px; }
+    .navbar a { color: #fff; text-decoration: none; }
+    .navbar a.active { color: #00e6e6; }
+    .btn.logout {
+      background: #00e6e6;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn.logout:hover { background: #00cccc; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="icon">
+      <h2 class="logo">CSS NC II</h2>
+    </div>
+    <div class="menu">
+      <ul>
+        <li><a href="dashboard.html">HOME</a></li>
+        <li><a href="coc1.html">COC 1</a></li>
+        <li><a href="coc2.html" class="active">COC 2</a></li>
+        <li><a href="coc3.html">COC 3</a></li>
+        <li><a href="coc4.html">COC 4</a></li>
+      </ul>
+    </div>
+    <button class="btn logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Discussion Section -->
+  <div class="discussion">
+    <h1>COC 2: Set Up Computer Networks</h1>
+    <p>
+      This module teaches learners to set up, configure, and troubleshoot computer networks.  
+      Topics include IP addressing, network devices, and protocols.
+    </p>
+
+    <!-- Objective 1 -->
+    <div class="objective">
+      <h2>COC2: Understanding IP Addresses</h2>
+      <p>Learn IPv4, IPv6, subnetting, and addressing schemes for networks.</p>
+      <iframe src="COC2.Understanding-IP-Addresses.pdf"></iframe>
+      <a href="COC2.Understanding-IP-Addresses.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 2 -->
+    <div class="objective">
+      <h2>COC2: Computer-Networks</h2>
+      <p>Explore different network layouts: star, bus, ring, mesh.</p>
+      <iframe src="COC2.Computer-Networks.pdf"></iframe>
+      <a href="COC2.Computer-Networks.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 3 -->
+    <div class="objective">
+      <h2>COC2: Network-Design-Addressing-Subnetting-and-Topology</h2>
+      <p>Step-by-step guide to configuring routers and switches for LAN/WAN networks.</p>
+      <iframe src="COC2.Network-Design-Addressing-Subnetting-and-Topology.pdf"></iframe>
+      <a href="COC2.Network-Design-Addressing-Subnetting-and-Topology.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 4 -->
+    <div class="objective">
+      <h2>COC2: What-Are-Computer-Networks</h2>
+      <p>Setup Wi-Fi networks, security configurations, and wireless troubleshooting.</p>
+      <iframe src="COC2.What-Are-Computer-Networks.pdf"></iframe>
+      <a href="COC2.What-Are-Computer-Networks.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 5: Setting Static IP Address -->
+<div class="objective">
+  <h2>COC3: Setting Static IP Address</h2>
+  <p>Learn how to configure a static IP address on Windows Server 2008 R2 using the Command Prompt. This step is crucial for ensuring consistent network communication within your server environment.</p>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/JPbvWujq2hY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <a href="https://youtu.be/JPbvWujq2hY?si=5OYWqhrP5mqM1gP-" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+</div>
+
+  </div>
+
+<script>
+  // --- Session check ---
+  const session = JSON.parse(localStorage.getItem('css_session'));
+  if(!session || !session.username){
+    alert('You must log in first!');
+    window.location.href = 'index.html';
+  }
+
+  // --- Logout function ---
+  function logout(){
+    localStorage.removeItem('css_session'); // clear session
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>
+

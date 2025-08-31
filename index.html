@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CSS NC II — Portal (Video background)</title>
+<style>
+:root{--accent:#ff7200;--accent-dark:#ff8f3a;--panel:rgba(0,0,0,0.75);--muted:#c7cbd0;--radius:10px;--fw:600;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',Roboto,Arial,sans-serif;color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+#bg-video{position:fixed; inset:0; width:100%; height:100%; object-fit:cover; z-index:-2; filter:brightness(0.65) contrast(1);}
+body.video-failed::before{content:"";position:fixed; inset:0; background:url('1.jpg') center/cover no-repeat; z-index:-2; filter:brightness(0.65);}
+.bg-overlay{position:fixed; inset:0; z-index:-1; background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.65)); pointer-events:none;}
+.wrap{min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:36px; gap:28px; position:relative;}
+.hero{max-width:740px; margin-top:40px;}
+.logo{display:inline-flex; align-items:center; gap:12px; font-weight:var(--fw); letter-spacing:0.3px; font-size:20px; color:var(--accent);}
+h1{font-size:48px; line-height:1.05; margin-top:18px;}
+h1 span{ color:var(--accent); font-size:56px;}
+p.lead{ color:var(--muted); margin-top:18px; font-size:17px; max-width:620px;}
+.card{width:320px; background:var(--panel); padding:22px; border-radius:var(--radius); margin-top:28px; box-shadow:0 10px 30px rgba(0,0,0,0.6);}
+.card h2{ color:var(--accent); text-align:center; margin-bottom:12px;}
+.field{ margin-top:12px;}
+label{ display:block; color:var(--muted); font-size:13px; margin-bottom:6px;}
+input[type="text"], input[type="password"]{width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); color:#fff; font-size:15px;}
+.btn{display:inline-block; width:100%; padding:11px 12px; margin-top:14px; border-radius:8px; font-weight:700; border:none; cursor:pointer; background:linear-gradient(90deg,var(--accent),var(--accent-dark)); color:#0b0b0b;}
+.ghost{background:transparent; color:var(--accent); border:1px solid rgba(255,255,255,0.06); margin-top:10px;}
+.msg{ margin-top:10px; color:#ffbcbc; font-size:13px; display:none;}
+.hint{ font-size:13px; color:var(--muted); margin-top:10px; text-align:center;}
+@media (max-width:980px){.wrap{ flex-direction:column; align-items:center; padding:18px; overflow:auto; } .hero{ text-align:center; } .card{ order:2; width:92%; } h1{ font-size:34px; }}
+</style>
+</head>
+<body>
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="background.mp4" type="video/mp4">
+</video>
+<div class="bg-overlay" aria-hidden="true"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="logo">🔧 CSS NC II — Portal</div>
+    <h1>Computer Systems Servicing<br><span>NC II</span></h1>
+    <p class="lead">A training portal — modules, discussions and resources for TVL / CSS learners and teachers.</p>
+  </div>
+
+  <div class="card" id="loginCard" role="region" aria-label="Login form">
+    <h2>Login / Register</h2>
+    <div class="field"><label for="user">Username</label><input id="user" type="text" placeholder="Enter username" autocomplete="username"></div>
+    <div class="field"><label for="pass">Password</label><input id="pass" type="password" placeholder="Enter password" autocomplete="current-password"></div>
+    <button class="btn" id="btnLogin">Sign in</button>
+    <button class="btn ghost" id="btnRegister">Register</button>
+    <div class="msg" id="loginMsg" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const btnLogin=document.getElementById('btnLogin');
+  const btnRegister=document.getElementById('btnRegister');
+  const userIn=document.getElementById('user');
+  const passIn=document.getElementById('pass');
+  const msg=document.getElementById('loginMsg');
+
+  btnLogin.addEventListener('click', handleLogin);
+  btnRegister.addEventListener('click', handleRegister);
+
+  userIn.addEventListener('keydown', e => {if(e.key==='Enter') handleLogin();});
+  passIn.addEventListener('keydown', e => {if(e.key==='Enter') handleLogin();});
+
+  function handleLogin(){
+    const username=userIn.value.trim();
+    const password=passIn.value;
+    if(!username || !password){ showMsg('Enter username and password'); return; }
+
+    const users = JSON.parse(localStorage.getItem('users')||'[]');
+    const found = users.find(u => u.username===username && u.password===password);
+    if(!found){ showMsg('Invalid username or password'); return; }
+
+    localStorage.setItem('css_session', JSON.stringify(found));
+    window.location.href='dashboard.html';
+  }
+
+  function handleRegister(e){
+    e.preventDefault(); // prevent reload
+    const username=userIn.value.trim();
+    const password=passIn.value;
+    if(!username || !password){ showMsg('Enter username and password'); return; }
+
+    let users = JSON.parse(localStorage.getItem('users')||'[]');
+    if(users.find(u => u.username===username)){ showMsg('Username already exists'); return; }
+
+    const newUser={username, password, name:username, role:'Instructor'};
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    showMsg('✅ User registered successfully! You can now login.');
+    userIn.value=''; passIn.value='';
+  }
+
+  function showMsg(text){
+    msg.style.display='block';
+    msg.textContent=text;
+  }
+})();
+</script>
+</body>
+</html>

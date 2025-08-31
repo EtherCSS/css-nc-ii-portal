@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS NC II Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background Video -->
+  <video autoplay muted loop id="bg-video">
+    <source src="hud-elements.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+
+  <div class="navbar">
+    <div class="icon">
+      <h2 class="logo">CSS NC II</h2>
+    </div>
+    <div class="menu">
+      <ul>
+        <li><a href="dashboard.html">HOME</a></li>
+        <li><a href="coc1.html">COC 1</a></li>
+        <li><a href="coc2.html">COC 2</a></li>
+        <li><a href="coc3.html">COC 3</a></li>
+        <li><a href="coc4.html">COC 4</a></li>
+      </ul>
+    </div>
+    <button class="btn logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="content">
+    <h1>Welcome to <span>CSS NC II</span> Dashboard</h1>
+    <p class="par">Here you can access all your training modules and resources.</p>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userPassword");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

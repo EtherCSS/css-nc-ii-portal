@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COC 1 - Install and Configure Computer Systems</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      color: #00e6e6;
+    }
+    .discussion {
+      max-width: 900px;
+      margin: 100px auto 50px auto;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .objective {
+      margin-bottom: 40px;
+    }
+    img {
+      display: block;
+      margin: 15px auto;
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
+    }
+    iframe {
+      display: block;
+      margin: 15px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #00e6e6;
+      color: #000;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .download-btn:hover {
+      background: #00cccc;
+    }
+    html, body {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 15px;
+    }
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .navbar a.active {
+      color: #00e6e6;
+    }
+    .btn.logout {
+      background: #00e6e6;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn.logout:hover {
+      background: #00cccc;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="icon">
+      <h2 class="logo">CSS NC II</h2>
+    </div>
+    <div class="menu">
+      <ul>
+        <li><a href="dashboard.html">HOME</a></li>
+        <li><a href="coc1.html" class="active">COC 1</a></li>
+        <li><a href="coc2.html">COC 2</a></li>
+        <li><a href="coc3.html">COC 3</a></li>
+        <li><a href="coc4.html">COC 4</a></li>
+      </ul>
+    </div>
+    <button class="btn logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Discussion Section -->
+  <div class="discussion">
+    <h1>COC 1: Install and Configure Computer Systems</h1>
+    <p>
+      This module equips learners with the essential skills to assemble, install, configure,
+      and troubleshoot computer systems. Each learning objective below includes detailed discussion
+      and the corresponding PDF.
+    </p>
+
+    <!-- Objective 1 -->
+    <div class="objective">
+      <h2>1. Identify and Prepare Hardware Components</h2>
+      <p>Before installation, identify components like motherboard, CPU, RAM, storage devices (HDD/SSD), and power supply.</p>
+      <iframe src="COC1.Types-and-Parts-of-Computers.pdf"></iframe>
+      <a href="COC1.Types-and-Parts-of-Computers.pdf" class="download-btn" download>📥 Download PDF</a>
+      <img src="hardware.jpg" alt="Computer Hardware Components">
+    </div>
+
+    <!-- Objective 2 -->
+    <div class="objective">
+      <h2>2. Introduction to Operating Systems</h2>
+      <p>Learn the basics of Windows and Linux OS, their functions, and navigation.</p>
+      <iframe src="COC1.Introduction-to-Computer-Operating-Systems.pdf"></iframe>
+      <a href="COC1.Introduction-to-Computer-Operating-Systems.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 3 -->
+    <div class="objective">
+      <h2>3. Peripheral Devices & Connectors</h2>
+      <p>Understand peripheral devices, connectors, and proper attachment to the system.</p>
+      <iframe src="COC1.Peripheral-Devices-The-Connectors-of-the-Digital-World.pdf"></iframe>
+      <a href="COC1.Peripheral-Devices-The-Connectors-of-the-Digital-World.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 4 -->
+    <div class="objective">
+      <h2>4. Computer Assembly Procedures</h2>
+      <p>Step-by-step assembly of the system from motherboard installation to all components.</p>
+      <iframe src="COC1.Computer-Assembly-Procedures.pdf"></iframe>
+      <a href="COC1.Computer-Assembly-Procedures.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 5 -->
+    <div class="objective">
+      <h2>5. POST & BIOS Configuration</h2>
+      <p>Power-On Self-Test (POST) and configuring BIOS/UEFI settings for optimal performance.</p>
+      <iframe src="COC1.Power-ON-Self-Test-POST-and-BIOS-Configuration-Procedures.pdf"></iframe>
+      <a href="COC1.Power-ON-Self-Test-POST-and-BIOS-Configuration-Procedures.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 6 -->
+    <div class="objective">
+      <h2>6. CMOS Technology</h2>
+      <p>Understanding CMOS (Complementary Metal Oxide Semiconductor) technology and its role in hardware.</p>
+      <iframe src="COC1.CMOS-Complementary-Metal-Oxide-Semiconductor-Technology.pdf"></iframe>
+      <a href="COC1.CMOS-Complementary-Metal-Oxide-Semiconductor-Technology.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 7 -->
+    <div class="objective">
+      <h2>7. Motherboards Overview</h2>
+      <p>Different motherboard types, form factors, slots, and functions in a system.</p>
+      <iframe src="COC1.Motherboards-The-Backbone-of-Your-PC.pdf"></iframe>
+      <a href="COC1.Motherboards-The-Backbone-of-Your-PC.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 8 -->
+    <div class="objective">
+      <h2>8. Multimedia & Storage Devices</h2>
+      <p>Overview of storage devices and multimedia components for data storage and expansion.</p>
+      <iframe src="COC1.Multimedia-Storage-Devices-Overview.pdf"></iframe>
+      <a href="COC1.Multimedia-Storage-Devices-Overview.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 9 -->
+    <div class="objective">
+      <h2>9. Installers & Windows 10 OS Preparation</h2>
+      <p>Preparation and guidelines for Windows 10 installation, including media creation and installer tools.</p>
+      <iframe src="COC1.Installers-Preparation-and-Windows-10-OS.pdf"></iframe>
+      <a href="COC1.Installers-Preparation-and-Windows-10-OS.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 10 -->
+    <div class="objective">
+      <h2>10. Streamlined OS & Driver Installation</h2>
+      <p>Efficient OS and driver installation to save time and avoid conflicts.</p>
+      <iframe src="COC1.Streamlined-OS-and-Driver-Installation.pdf"></iframe>
+      <a href="COC1.Streamlined-OS-and-Driver-Installation.pdf" class="download-btn" download>📥 Download PDF</a>
+    </div>
+
+    <!-- Objective 12 -->
+<div class="objective">
+  <h2>12. Application Packages & Programs</h2>
+  <p>Installing application software, packages, and productivity tools required for daily use.</p>
+  <iframe src="COC1.Application-Packages-and-Application-Programs.pdf"></iframe>
+  <a href="COC1.Application-Packages-and-Application-Programs.pdf" class="download-btn" download>📥 Download PDF</a>
+</div>
+
+<!-- Objective 13 -->
+<div class="objective">
+  <h2>13. Bootable Devices</h2>
+  <p>Creating and using bootable devices for OS installation, recovery, and maintenance.</p>
+  <iframe src="COC1. Bootable-Devices.pdf"></iframe>
+  <a href="COC1. Bootable-Devices.pdf" class="download-btn" download>📥 Download PDF</a>
+</div>
+
+
+  <script>
+    function logout() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
