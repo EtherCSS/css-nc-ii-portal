@@ -3,32 +3,227 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COC 4 - Maintain & Repair</title>
+  <title>COC 4 Maintain and Repair Computer Systems and Networks</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      color: #00e6e6;
+    }
+    .discussion {
+      max-width: 900px;
+      margin: 100px auto 50px auto;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .objective {
+      margin-bottom: 40px;
+    }
+    iframe {
+      display: block;
+      margin: 15px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #00e6e6;
+      color: #000;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .download-btn:hover {
+      background: #00cccc;
+    }
+    html, body {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 15px;
+    }
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .navbar a.active {
+      color: #00e6e6;
+    }
+    .btn.logout {
+      background: #00e6e6;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn.logout:hover {
+      background: #00cccc;
+    }
+  </style>
 </head>
 <body>
+  <!-- Navbar -->
   <div class="navbar">
-    <a href="home.html">🏠 Home</a>
-    <a href="coc1.html">COC 1</a>
-    <a href="coc2.html">COC 2</a>
-    <a href="coc3.html">COC 3</a>
-    <a href="coc4.html">COC 4</a>
+    <div class="icon">
+      <h2 class="logo">CSS NC II</h2>
+    </div>
+    <div class="menu">
+      <ul>
+        <li><a href="dashboard.html">HOME</a></li>
+        <li><a href="COC1.html">COC 1</a></li>
+        <li><a href="COC2.html">COC 2</a></li>
+        <li><a href="COC3.html">COC 3</a></li>
+        <li><a href="COC4.html" class="active">COC 4</a></li>
+      </ul>
+    </div>
+    <button class="btn logout" onclick="logout()">Logout</button>
   </div>
 
-  <div class="container">
-    <h1>COC 4: Maintain & Repair Computer Systems</h1>
-    <div class="topic">
-      <h2>🔹 Preventive Maintenance</h2>
-      <p>Regular cleaning, checking cables, and monitoring system performance.</p>
+  <!-- Discussion Section -->
+  <div class="discussion">
+    <h1>COC 4: Maintain and Repair Computer Systems and Networks</h1>
+    <p>
+      This module provides the knowledge and skills to perform maintenance and repair tasks 
+      on computer systems and networks. Learners will understand preventive maintenance, 
+      diagnostic tools, troubleshooting, and repair techniques. Below are the key topics with 
+      discussion for each.
+    </p>
+       <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
+      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>📥 Download PDF</a>
+      
+
+    <!-- Objective 1 -->
+    <div class="objective">
+      <h2>1. Preventive Maintenance</h2>
+      <p>
+        Preventive maintenance involves regular cleaning, inspection, and updating of computer systems 
+        to avoid breakdowns. This includes dust removal, checking for loose connections, and updating 
+        operating systems and applications.
+    </p>
+        <iframe src="COC4.Preventive-Maintenance.pdf"></iframe>
+      <a href="COC4.Preventive-Maintenance.pdf" class="download-btn" download>📥 Download PDF</a>
+      
     </div>
-    <div class="topic">
-      <h2>🔹 Troubleshooting Techniques</h2>
-      <p>Step-by-step process: Identify problem, test solutions, implement fix, verify system.</p>
+
+    <!-- Objective 2 -->
+    <div class="objective">
+      <h2>2. Troubleshooting Methodology</h2>
+      <p>
+        Troubleshooting is a step-by-step process to identify and resolve issues. 
+        It includes problem identification, isolating the cause, testing solutions, 
+        and verifying system functionality.
+      </p>
+      <iframe src="COC4.Driver Issues.pdf"></iframe>
+      <a href="COC4.Driver Issues.pdf" class="download-btn" download>📥 Download PDF</a>
+      </p>
+      <iframe src="COC4.Troubleshooting.pdf"></iframe>
+      <a href="COC4.Troubleshooting.pdf" class="download-btn" download>📥 Download PDF</a>
+      
     </div>
-    <div class="topic">
-      <h2>🔹 Repairing Hardware</h2>
-      <p>Replacing faulty RAM, power supplies, hard drives, and peripherals safely.</p>
+
+    <!-- Objective 3 -->
+    <div class="objective">
+      <h2>3. Common Hardware Issues</h2>
+      <p>
+        <iframe src="COC4.Common-Hardware-Issues.pdf"></iframe>
+      <a href="COC4.Common-Hardware-Issues.pdf" class="download-btn" download>📥 Download PDF</a>
+      
+        Hardware issues such as faulty RAM, overheating CPUs, power supply failures, 
+        or damaged cables are identified and resolved using diagnostic tools and replacement techniques.
+      </p>
+      
+    </div>
+
+    <!-- Objective 4 -->
+    <div class="objective">
+      <h2>4. Software and Driver Issues</h2>
+      <p>
+        Outdated or corrupted drivers can cause malfunctions. Technicians must be able to update, 
+        reinstall, or roll back drivers, as well as handle OS corruption using repair tools.
+      </p>
+     <iframe src="COC4.Driver Issues.pdf"></iframe>
+      <a href="COC4.Driver Issues.pdf" class="download-btn" download>📥 Download PDF</a>
+      
+    </div>
+
+    <!-- Objective 5 -->
+    <div class="objective">
+      <h2>5. Network Troubleshooting</h2>
+      <p>
+        Networking issues include IP conflicts, slow connectivity, router misconfigurations, 
+        or damaged cables. Tools like <code>ping</code>, <code>ipconfig</code>, and network testers 
+        are used to diagnose and fix these problems.
+      </p>
+    </div>
+
+    <!-- Objective 6 -->
+    <div class="objective">
+      <h2>6. Data Backup and Recovery</h2>
+      <p>
+         <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
+      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>📥 Download PDF</a>
+      
+    </div>
+        Backing up data ensures that files are safe in case of hardware or software failure. 
+        Recovery techniques include system restore points, cloning, and using recovery software.
+      </p>
+    </div>
+
+    <!-- Objective 7 -->
+    <div class="objective">
+      <h2>7. Safety and ESD Precautions</h2>
+      <p>
+        Proper handling of computer components requires grounding methods and ESD (Electrostatic Discharge) 
+        protection to prevent component damage during maintenance and repair.
+      </p>
+    </div>
+
+    <!-- Objective 8 -->
+    <div class="objective">
+      <h2>8. Documentation and Reporting</h2>
+      <p>
+        Recording maintenance and repair activities is crucial. Reports include system issues, 
+        solutions applied, and recommendations for future maintenance.
+      </p>
     </div>
   </div>
+
+  <script>
+    function logout() {
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 </html>

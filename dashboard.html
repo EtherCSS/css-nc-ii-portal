@@ -5,6 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSS NC II Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Chatbot Button */
+    .chatbot-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .chatbot-btn video {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      pointer-events: none; /* ✅ Prevent clicking/tapping on video */
+    }
+
+    /* Chatbot Window */
+    .chatbot-window {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: rgba(0, 0, 0, 0.95);
+      border-radius: 15px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      border: 2px solid orange;
+    }
+
+    .chatbot-header {
+      background: orange;
+      padding: 10px;
+      color: black;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      color: white;
+      font-size: 14px;
+    }
+
+    .chatbot-input {
+      display: flex;
+      border-top: 1px solid orange;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+      background: black;
+      color: white;
+    }
+
+    .chatbot-input button {
+      padding: 10px;
+      background: orange;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: black;
+    }
+  </style>
 </head>
 <body>
   <!-- Background Video -->
@@ -24,6 +101,9 @@
         <li><a href="coc2.html">COC 2</a></li>
         <li><a href="coc3.html">COC 3</a></li>
         <li><a href="coc4.html">COC 4</a></li>
+        <li><a href="https://e-tesda.gov.ph/" target="_blank">e-TESDA</a></li> <!-- ✅ Added -->
+        <li><a href="https://www.classpoint.app/" target="_blank">Classpoint</a></li> <!-- ✅ Added -->
+        <li><a href="aboutus.html">About Us</a></li>
       </ul>
     </div>
     <button class="btn logout" onclick="logout()">Logout</button>
@@ -34,12 +114,85 @@
     <p class="par">Here you can access all your training modules and resources.</p>
   </div>
 
+  <!-- Chatbot Button -->
+  <button class="chatbot-btn" onclick="toggleChatbot()">
+    <video autoplay loop muted>
+      <source src="ai-chatbot-animated-icon-gif-download-10311520.mp4" type="video/mp4">
+    </video>
+  </button>
+
+  <!-- Chatbot Window -->
+  <div class="chatbot-window" id="chatbot">
+    <div class="chatbot-header">Rib AI</div>
+    <div class="chatbot-messages" id="messages"></div>
+    <div class="chatbot-input">
+      <input type="text" id="userInput" placeholder="Type a question...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
   <script>
     function logout() {
       localStorage.removeItem("userEmail");
       localStorage.removeItem("userPassword");
       window.location.href = "index.html";
     }
+
+    function toggleChatbot() {
+      const chatbot = document.getElementById("chatbot");
+      chatbot.style.display = chatbot.style.display === "flex" ? "none" : "flex";
+    }
+
+    // Predefined simple answers (short intro + basics)
+    const predefinedAnswers = {
+      "what is css nc ii": "CSS NC II (Computer Systems Servicing NC II) is a TESDA course that trains you in installing, maintaining, and repairing computer systems and networks.",
+      "core competency": "Core Competencies of CSS NC II include: Installing/Configuring computer systems, Setting up networks, Configuring routers, and Maintaining computer systems and networks.",
+      "basic networking": "Basic networking covers IP addressing, subnetting, router configuration, and connecting computers to form a LAN.",
+      "server roles": "Server roles include DHCP, DNS, File Server, Print Server, and Domain Controller (Active Directory).",
+    };
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const messages = document.getElementById("messages");
+
+      if (input.value.trim() === "") return;
+
+      // User message
+      const userMsg = document.createElement("div");
+      userMsg.textContent = "You: " + input.value;
+      messages.appendChild(userMsg);
+
+      // Bot reply placeholder
+      const botMsg = document.createElement("div");
+      botMsg.style.color = "orange";
+      botMsg.textContent = "Bot: Thinking...";
+      messages.appendChild(botMsg);
+
+      messages.scrollTop = messages.scrollHeight;
+
+      const userText = input.value.toLowerCase();
+
+      // Simple predefined responses
+      if (predefinedAnswers[userText]) {
+        botMsg.textContent = "Bot: " + predefinedAnswers[userText];
+      } else {
+        botMsg.textContent = "Bot: Sorry, I can only answer basic questions about CSS NC II for now.";
+      }
+
+      input.value = "";
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Allow Enter key to send message
+    document.getElementById("userInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
   </script>
 </body>
 </html>
+
+
+
+
