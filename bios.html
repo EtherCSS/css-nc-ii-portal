@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acer BIOS Simulator - Advanced</title>
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #1b1b1b;
+  color: #fff;
+}
+#biosHeader {
+  background: #0b3d91;
+  padding: 15px 30px;
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+}
+#tabs {
+  display: flex;
+  background: #222;
+  border-bottom: 2px solid #0b3d91;
+}
+.tab {
+  padding: 12px 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+  color: #bbb;
+}
+.tab.active, .tab:hover {
+  background: #0b3d91;
+  color: #fff;
+}
+#main {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  background: #2a2a2a;
+  min-height: 80vh;
+  flex-direction: column;
+  align-items: center;
+}
+h1 {
+  color: #0b3d91;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+select, button {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #0b3d91;
+  background: #1b1b1b;
+  color: #fff;
+  margin: 10px;
+}
+button {
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+button:hover { background: #1f5abf; }
+#feedback {
+  margin-top: 25px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #ffb74d;
+  min-height: 24px;
+  text-align: center;
+}
+.list-device {
+  margin-top: 20px;
+  text-align: left;
+  width: 300px;
+}
+.list-device li {
+  padding: 8px;
+  border: 1px solid #0b3d91;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  background: #111;
+}
+.list-device li.selected { background: #0b3d91; color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="biosHeader">
+  Acer BIOS Simulator
+  <span>F10: Save & Exit | ESC: Exit</span>
+</div>
+
+<div id="tabs">
+  <div class="tab active" data-tab="boot">Boot</div>
+  <div class="tab" data-tab="system">System Info</div>
+  <div class="tab" data-tab="security">Security</div>
+  <div class="tab" data-tab="exit">Exit</div>
+</div>
+
+<div id="main">
+  <h1>Boot Priority</h1>
+  <p>Reorder devices (select device then move up/down)</p>
+  <ul class="list-device" id="bootList">
+    <li>HDD (Hard Disk Drive)</li>
+    <li>CD/DVD Drive</li>
+    <li>USB Flash Drive</li>
+    <li>Network/PXE</li>
+  </ul>
+  <div>
+    <button onclick="moveUp()">Move Up</button>
+    <button onclick="moveDown()">Move Down</button>
+    <button onclick="disableDevice()">Enable/Disable</button>
+    <button onclick="saveExit()">Save & Exit (F10)</button>
+    <button onclick="resetBIOS()">Reset</button>
+  </div>
+  <div id="feedback"></div>
+</div>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const mainTitle = document.querySelector('#main h1');
+const bootList = document.getElementById('bootList');
+let selectedIndex = null;
+let disabledDevices = [];
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('feedback').textContent = "";
+    switch(tab.dataset.tab){
+      case 'boot': showBoot(); break;
+      case 'system': showSystem(); break;
+      case 'security': showSecurity(); break;
+      case 'exit': showExit(); break;
+    }
+  });
+});
+
+function showBoot(){
+  mainTitle.textContent = "Boot Priority";
+  bootList.style.display = "block";
+}
+function showSystem(){
+  mainTitle.textContent = "System Information";
+  bootList.style.display = "none";
+  document.getElementById('feedback').innerHTML = `
+    CPU: Intel i5-10400<br>
+    RAM: 16GB DDR4<br>
+    BIOS Version: 1.2.3<br>
+    Boot Mode: UEFI
+  `;
+}
+function showSecurity(){
+  mainTitle.textContent = "Security Settings";
+  bootList.style.display = "none";
+  document.getElementById('feedback').innerHTML = `Supervisor Password: <strong>Disabled</strong>`;
+}
+function showExit(){
+  mainTitle.textContent = "Exit BIOS";
+  bootList.style.display = "none";
+  document.getElementById('feedback').innerHTML = `Exit without saving? Press ESC to discard changes.`;
+}
+
+// Boot device selection
+bootList.addEventListener('click', e => {
+  if(e.target.tagName === "LI"){
+    const lis = bootList.querySelectorAll('li');
+    lis.forEach(li => li.classList.remove('selected'));
+    e.target.classList.add('selected');
+    selectedIndex = Array.from(lis).indexOf(e.target);
+  }
+});
+
+function moveUp(){
+  if(selectedIndex === null || selectedIndex === 0) return;
+  const items = bootList.querySelectorAll('li');
+  bootList.insertBefore(items[selectedIndex], items[selectedIndex-1]);
+  selectedIndex--;
+}
+
+function moveDown(){
+  if(selectedIndex === null) return;
+  const items = bootList.querySelectorAll('li');
+  if(selectedIndex === items.length-1) return;
+  bootList.insertBefore(items[selectedIndex+1], items[selectedIndex]);
+  selectedIndex++;
+}
+
+function disableDevice(){
+  if(selectedIndex === null) return;
+  const items = bootList.querySelectorAll('li');
+  const device = items[selectedIndex];
+  if(disabledDevices.includes(device.textContent)){
+    disabledDevices = disabledDevices.filter(d => d !== device.textContent);
+    device.style.opacity = 1;
+    document.getElementById('feedback').textContent = `${device.textContent} Enabled`;
+  } else {
+    disabledDevices.push(device.textContent);
+    device.style.opacity = 0.4;
+    document.getElementById('feedback').textContent = `${device.textContent} Disabled`;
+  }
+}
+
+function saveExit(){
+  const items = bootList.querySelectorAll('li');
+  const firstDevice = items[0].textContent;
+  if(firstDevice.includes("USB") && !disabledDevices.includes("USB Flash Drive")){
+    document.getElementById('feedback').textContent = "✅ USB is first boot device. Changes saved!";
+  } else {
+    document.getElementById('feedback').textContent = "❌ USB is not first boot device or disabled. Check settings!";
+  }
+}
+
+function resetBIOS(){
+  const lis = bootList.querySelectorAll('li');
+  const names = ["HDD (Hard Disk Drive)", "CD/DVD Drive", "USB Flash Drive", "Network/PXE"];
+  lis.forEach((li,i) => {
+    li.textContent = names[i];
+    li.style.opacity = 1;
+    li.classList.remove('selected');
+  });
+  selectedIndex = null;
+  disabledDevices = [];
+  document.getElementById('feedback').textContent = "";
+}
+</script>
+
+</body>
+</html>

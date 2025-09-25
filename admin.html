@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,159,26,0.3);
+    }
+    h1 { color: #ff9f1a; margin: 0; }
+    .btn {
+      background: #ff9f1a;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #000;
+    }
+    .btn:hover { background: #ffa733; }
+    section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #111;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,159,26,0.2);
+    }
+    h2 { color: #ff9f1a; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <button class="btn" onclick="logout()">Logout</button>
+  </header>
+
+  <section>
+    <h2>Welcome, Administrator</h2>
+    <p>This is your secured admin panel. You can manage students, update grades, and monitor system activity here.</p>
+  </section>
+
+  <section>
+    <h2>📋 Student Management</h2>
+    <p>[Feature Placeholder] – Add student lists, editing tools, and grade management here.</p>
+  </section>
+
+<script>
+// 🔒 Prevent direct access if not logged in
+if (localStorage.getItem("isAdmin") !== "true") {
+  window.location.href = "login.html"; 
+}
+
+function logout(){
+  localStorage.removeItem("isAdmin"); 
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>
+

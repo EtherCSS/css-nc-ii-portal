@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RJ45 Cable Wiring Simulator</title>
+  <style>
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #ff9f1a;
+      margin-bottom: 10px;
+    }
+    .instructions {
+      max-width: 700px;
+      margin: 0 auto 20px auto;
+      padding: 15px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #c9d1d9;
+    }
+
+    .rj45-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px auto;
+      width: 850px;
+    }
+    .rj45-label {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .rj45 {
+      background: linear-gradient(to bottom, #444, #222);
+      padding: 15px;
+      border-radius: 10px;
+      display: grid;
+      grid-template-columns: repeat(8, 30px);
+      gap: 5px;
+      border: 3px solid #555;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .slot {
+      width: 30px;
+      height: 60px;
+      background: #111;
+      border: 1px solid #444;
+      border-radius: 4px;
+      transition: 0.2s;
+    }
+    .slot:hover {
+      border-color: #ff9f1a;
+    }
+    .slot.active {
+      border-color: #ff9f1a;
+      box-shadow: 0 0 8px #ff9f1a;
+    }
+
+    .wire {
+      width: 110px;
+      height: 28px;
+      border-radius: 20px;
+      margin: 5px;
+      cursor: grab;
+      text-align: center;
+      line-height: 28px;
+      font-size: 13px;
+      color: #111;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+    }
+    .wire:active {
+      transform: scale(0.95);
+      cursor: grabbing;
+    }
+    .wires {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+      background: #161b22;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #ff9f1a;
+      color: #111;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #e68900;
+    }
+
+    .feedback {
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      min-height: 24px;
+    }
+    .feedback.success {
+      color: #00e676;
+    }
+    .feedback.error {
+      color: #ff5252;
+    }
+  </style>
+</head>
+<body>
+  <h1>RJ45 Cable Wiring Simulator</h1>
+  <div class="instructions">
+    Drag and drop the wires into each RJ45 connector.  
+    Build either a <b>Straight-through</b> (same order) or a <b>Crossover</b> (swap green & orange) cable.  
+    Then click <b>Check Cable</b> to see if your wiring is correct.
+  </div>
+
+  <div class="rj45-container">
+    <div>
+      <div class="rj45-label">Left RJ45</div>
+      <div id="left" class="rj45"></div>
+    </div>
+    <div>
+      <div class="rj45-label">Right RJ45</div>
+      <div id="right" class="rj45"></div>
+    </div>
+  </div>
+
+  <div class="wires" id="wires"></div>
+
+  <button onclick="checkCable()">Check Cable</button>
+  <button onclick="resetCable()">Reset</button>
+
+  <div id="feedback" class="feedback"></div>
+
+  <script>
+    const wireSet = [
+      { name: "Green/White", color: "#ccffcc" },
+      { name: "Green", color: "green" },
+      { name: "Orange/White", color: "#ffddcc" },
+      { name: "Blue", color: "blue" },
+      { name: "Blue/White", color: "#cce6ff" },
+      { name: "Orange", color: "orange" },
+      { name: "Brown/White", color: "#e6ccb3" },
+      { name: "Brown", color: "brown" }
+    ];
+
+    const left = document.getElementById("left");
+    const right = document.getElementById("right");
+    const wiresDiv = document.getElementById("wires");
+    const feedback = document.getElementById("feedback");
+
+    let leftSlots = Array(8).fill(null);
+    let rightSlots = Array(8).fill(null);
+
+    function createRJ45(connector, side) {
+      connector.innerHTML = "";
+      for (let i = 0; i < 8; i++) {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.dataset.index = i;
+        slot.dataset.side = side;
+
+        slot.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          slot.classList.add("active");
+        });
+        slot.addEventListener("dragleave", () => slot.classList.remove("active"));
+        slot.addEventListener("drop", (e) => {
+          slot.classList.remove("active");
+          const wireIndex = e.dataTransfer.getData("wireIndex");
+          slot.style.background = wireSet[wireIndex].color;
+          slot.title = wireSet[wireIndex].name;
+
+          if (side === "left") leftSlots[i] = wireIndex;
+          else rightSlots[i] = wireIndex;
+        });
+
+        connector.appendChild(slot);
+      }
+    }
+
+    function createWires() {
+      wiresDiv.innerHTML = "";
+      wireSet.forEach((wire, i) => {
+        const div = document.createElement("div");
+        div.className = "wire";
+        div.innerText = wire.name;
+        div.style.background = wire.color;
+        div.draggable = true;
+        div.dataset.index = i;
+        div.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("wireIndex", i);
+        });
+        wiresDiv.appendChild(div);
+      });
+    }
+
+    function checkCable() {
+      // Straight-through check
+      const straight = leftSlots.every((val, i) => val === rightSlots[i]);
+
+      // Crossover check
+      const crossover = (
+        leftSlots[0] == 2 && leftSlots[1] == 5 &&
+        leftSlots[2] == 0 && leftSlots[5] == 1 &&
+        leftSlots[3] == 3 && leftSlots[4] == 4 &&
+        leftSlots[6] == 6 && leftSlots[7] == 7 &&
+        rightSlots.every((val, i) => val === leftSlots[i])
+      );
+
+      if (straight) {
+        feedback.textContent = "✅ Correct! This is a Straight-through cable.";
+        feedback.className = "feedback success";
+      } else if (crossover) {
+        feedback.textContent = "✅ Correct! This is a Crossover cable.";
+        feedback.className = "feedback success";
+      } else {
+        feedback.textContent = "❌ Incorrect wiring. Try again.";
+        feedback.className = "feedback error";
+      }
+    }
+
+    function resetCable() {
+      leftSlots.fill(null);
+      rightSlots.fill(null);
+      createRJ45(left, "left");
+      createRJ45(right, "right");
+      createWires();
+      feedback.textContent = "";
+    }
+
+    // Init
+    createRJ45(left, "left");
+    createRJ45(right, "right");
+    createWires();
+  </script>
+</body>
+</html>
