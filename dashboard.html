@@ -1,198 +1,607 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CSS NC II Dashboard</title>
-  <link rel="stylesheet" href="style.css">
   <style>
-    /* Chatbot Button */
-    .chatbot-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 1000;
+    :root{
+      --brand:#ff9f1a;
+      --bg:#0a0a0a;
+      --panel:#111;
+      --text:#f5f5f5;
+      --muted:#a5a5a5;
+      --ok:#2ecc71;
+      --warn:#e74c3c;
     }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:#000;}
+    #bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-4;filter:brightness(1);}
+    .navbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(0,0,0,.6);backdrop-filter:saturate(120%) blur(6px);border-bottom:1px solid rgba(255,159,26,.35);}
+    .logo{margin:0;color:var(--brand);}
+    .menu ul{list-style:none;display:flex;gap:40px;margin:0;padding:0;}
+    .menu a{color:#fff;text-decoration:none;font-weight:600;opacity:.9;}
+    .menu a:hover{opacity:1;}
+    .btn.logout{background:var(--brand);border:none;padding:8px 14px;border-radius:10px;font-weight:700;cursor:pointer;}
+    .btn.logout:active{transform:scale(.96);}
+    .btn.admin{background:transparent;border:1px solid rgba(255,159,26,.2);color:var(--brand);padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;margin-left:10px;}
+    .btn.admin:hover{background:rgba(255,159,26,.06);}
+    .content{padding:56px 18px 12px;max-width:1000px;margin:0 auto;text-align:center;}
+    .content h1{font-size:34px;margin:0 0 8px;}
+    .content h1 span{color:var(--brand);}
+    .grades-section{margin:30px auto 40px;max-width:720px;padding:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,159,26,.35);border-radius:14px;backdrop-filter:blur(4px);}
+    .grades-section h2{margin:0 0 12px;}
+    .input-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .grades-section input{padding:12px 14px;min-width:280px;border:1px solid var(--brand);border-radius:10px;background:#000;color:#fff;outline:none;}
+    .pressable{padding:12px 16px;background:var(--brand);border:none;border-radius:10px;color:#000;font-weight:800;cursor:pointer;}
+    .pressable:active{transform:scale(.94);}
+    .lookup-error{margin-top:10px;color:var(--warn);font-weight:700;display:none;}
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:2000;opacity:0;transition:opacity .35s ease;}
+    .overlay.show{display:flex;opacity:1;}
+    .dashboard-card{width:min(960px,95vw);max-height:92vh;overflow:auto;background:#111;border:1px solid rgba(255,159,26,.45);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.65);padding:22px;opacity:0;transform:translateY(20px);transition:all .35s ease;}
+    .overlay.show .dashboard-card{opacity:1;transform:translateY(0);}
+    .dash-header{display:flex;align-items:center;gap:14px;border-bottom:1px dashed rgba(255,255,255,.1);padding-bottom:14px;margin-bottom:16px;}
+    .avatar{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,159,26,.15);border:1px solid rgba(255,159,26,.35);font-weight:900;color:var(--brand);}
+    .dash-title h2{margin:0;font-size:22px;}
+    .muted{color:var(--muted);}
+    .tile{background:var(--panel);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px;margin-bottom:12px;}
+    .tile h3{margin:0 0 8px;font-size:14px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+    table{width:100%;border-collapse:collapse;}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;}
+    th{color:var(--muted);font-size:12px;text-transform:uppercase;}
+    .close-btn{position:sticky;top:0;float:right;margin-left:auto;background:#000;border:1px solid rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;}
+    .status-badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800;}
+    /* Chatbot */
+    .chatbot-btn{
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      width:60px;
+      height:60px;
+      border-radius:50%;
+      background:var(--brand);
+      color:#000;
+      border:none;
+      font-size:26px;
+      cursor:pointer;
+      box-shadow:0 4px 8px rgba(0,0,0,0.4);
+      z-index:3000;
+      font-weight:900;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      padding:0;
+    }
+    .chatbot-btn video{
+      pointer-events:none; /* Makes the video not clickable */
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:50%;
+    }
+    .chatbot-window{display:none;position:fixed;bottom:90px;right:20px;width:320px;height:420px;background:#111;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,0.6);overflow:hidden;z-index:3000;flex-direction:column;border:1px solid rgba(255,159,26,.45);}
+    .chatbot-header{background:var(--brand);color:#000;padding:10px;text-align:center;font-weight:800;display:flex;justify-content:space-between;align-items:center;}
+    .chatbot-messages{flex:1;padding:12px;overflow-y:auto;color:#fff;font-size:14px;}
+    .chatbot-input{display:flex;border-top:1px solid #333;}
+    .chatbot-input input{flex:1;padding:10px;border:none;outline:none;background:#222;color:#fff;}
+    .chatbot-input button{padding:10px;background:var(--brand);border:none;cursor:pointer;font-weight:bold;}
+    .message{margin:6px 0;padding:8px 12px;border-radius:12px;max-width:75%;line-height:1.4;}
+    .user{background:var(--brand);color:#000;margin-left:auto;}
+    .bot{background:#333;color:#fff;margin-right:auto;}
 
-    .chatbot-btn video {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      pointer-events: none; /* ✅ Prevent clicking/tapping on video */
-    }
-
-    /* Chatbot Window */
-    .chatbot-window {
-      position: fixed;
-      bottom: 100px;
-      right: 20px;
-      width: 300px;
-      height: 400px;
-      background: rgba(0, 0, 0, 0.95);
-      border-radius: 15px;
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 1000;
-      border: 2px solid orange;
-    }
-
-    .chatbot-header {
-      background: orange;
-      padding: 10px;
-      color: black;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .chatbot-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      color: white;
-      font-size: 14px;
-    }
-
-    .chatbot-input {
-      display: flex;
-      border-top: 1px solid orange;
-    }
-
-    .chatbot-input input {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      outline: none;
-      background: black;
-      color: white;
-    }
-
-    .chatbot-input button {
-      padding: 10px;
-      background: orange;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      color: black;
-    }
+    /* Admin login modal & admin panel styles */
+    .admin-login-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:4000;}
+    .admin-login-card{background:#111;padding:22px;border-radius:12px;width:320px;border:1px solid rgba(255,159,26,.25);box-shadow:0 12px 40px rgba(0,0,0,.6);}
+    .admin-login-card h3{margin:0 0 12px;color:var(--brand);text-align:center;}
+    .admin-login-card input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-bottom:10px;background:#000;color:#fff;}
+    .admin-login-card .hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px;}
+    .admin-panel-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);z-index:3500;}
+    .admin-panel{width:min(1100px,96vw);max-height:92vh;overflow:auto;background:#0e0e0e;border-radius:12px;border:1px solid rgba(255,159,26,.25);padding:18px;}
+    .admin-panel .panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    .admin-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+    @media(min-width:900px){ .admin-grid{grid-template-columns: 1fr 1fr;} .admin-grid .full{grid-column:span 2;} }
+    .final-input { width:72px; padding:6px; border-radius:8px; background:#111; color:#fff; border:1px solid rgba(255,255,255,.06); }
+    .small-btn{background:transparent;border:1px solid rgba(255,255,255,.06);padding:6px 8px;border-radius:8px;color:var(--brand);cursor:pointer;}
+    .hidden{display:none !important;}
   </style>
 </head>
 <body>
-  <!-- Background Video -->
-  <video autoplay muted loop id="bg-video">
-    <source src="hud-elements.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
 
-  <div class="navbar">
-    <div class="icon">
-      <h2 class="logo">CSS NC II</h2>
-    </div>
-    <div class="menu">
-      <ul>
-        <li><a href="dashboard.html">HOME</a></li>
-        <li><a href="coc1.html">COC 1</a></li>
-        <li><a href="coc2.html">COC 2</a></li>
-        <li><a href="coc3.html">COC 3</a></li>
-        <li><a href="coc4.html">COC 4</a></li>
-        <li><a href="https://e-tesda.gov.ph/" target="_blank">e-TESDA</a></li> <!-- ✅ Added -->
-        <li><a href="https://www.classpoint.app/" target="_blank">Classpoint</a></li> <!-- ✅ Added -->
-        <li><a href="aboutus.html">About Us</a></li>
-      </ul>
-    </div>
+<video autoplay muted loop id="bg-video">
+  <source src="hud-elements.mp4" type="video/mp4" />
+</video>
+
+<div class="navbar">
+  <div class="icon"><h2 class="logo">CSS NC II</h2></div>
+  <div class="menu">
+    <ul>
+      <li><a href="dashboard.html">HOME</a></li>
+      <li><a href="coc1.html">COC 1</a></li>
+      <li><a href="coc2.html">COC 2</a></li>
+      <li><a href="coc3.html">COC 3</a></li>
+      <li><a href="coc4.html">COC 4</a></li>
+      <li><a href="https://e-tesda.gov.ph/" target="_blank">e-TESDA</a></li>
+      <li><a href="https://www.classpoint.app/" target="_blank">Classpoint</a></li>
+      <li><a href="virtuallab.html">Virtual Lab</a></li>
+      <li><a href="Rib.html">Teacher</a></li>
+      <li><a href="aboutus.html">About Us</a></li>
+    </ul>
+  </div>
+
+  <div style="display:flex;align-items:center;">
+    <!-- Admin button (opens login or admin panel if already logged) -->
+    <button class="btn.admin" id="adminBtn" onclick="openAdmin()">
+      🔒 Admin
+    </button>
     <button class="btn logout" onclick="logout()">Logout</button>
   </div>
+</div>
 
-  <div class="content">
-    <h1>Welcome to <span>CSS NC II</span> Dashboard</h1>
-    <p class="par">Here you can access all your training modules and resources.</p>
+<div class="content">
+  <h1>Welcome to <span>CSS NC II</span> Dashboard</h1>
+  <p>Here you can access all your training modules and resources.</p>
+</div>
+
+<section class="grades-section">
+  <h2>Check Your Grades</h2>
+  <div class="input-row">
+    <input id="studentNumber" type="text" placeholder="Enter Student Number" />
+    <button class="pressable" onclick="checkGrades()">View Grade</button>
   </div>
+  <div id="lookupError" class="lookup-error">No record found. Please check your Student Number.</div>
+</section>
 
-  <!-- Chatbot Button -->
-  <button class="chatbot-btn" onclick="toggleChatbot()">
-    <video autoplay loop muted>
-      <source src="ai-chatbot-animated-icon-gif-download-10311520.mp4" type="video/mp4">
-    </video>
-  </button>
+<div id="gradeOverlay" class="overlay" aria-hidden="true">
+  <div class="dashboard-card" role="dialog" aria-modal="true">
+    <button class="close-btn" onclick="closeOverlay()">✕</button>
+    <div class="dash-header">
+      <div class="avatar" id="avatarInitials">ST</div>
+      <div class="dash-title">
+        <h2 id="dashTitle">Student Name</h2>
+        <div class="muted" id="dashStudentId">Student No: —</div>
+      </div>
+    </div>
 
-  <!-- Chatbot Window -->
-  <div class="chatbot-window" id="chatbot">
-    <div class="chatbot-header">Rib AI</div>
-    <div class="chatbot-messages" id="messages"></div>
-    <div class="chatbot-input">
-      <input type="text" id="userInput" placeholder="Type a question...">
-      <button onclick="sendMessage()">Send</button>
+    <div class="tile">
+      <h3>Summary</h3>
+      <div class="kpi" id="avgGrade">—</div>
+      <div class="muted">General Average</div>
+      <div style="margin-top:12px">
+        <span id="statusBadge" class="status-badge">Status</span>
+      </div>
+      <div style="margin-top:12px" class="muted">Remarks: <span id="remarks">—</span></div>
+    </div>
+
+    <div class="tile">
+      <h3>Detailed Grades</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>1st Quarter</th>
+            <th>2nd Quarter</th>
+            <th>Final</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Introduction to the Philosophy of the Human Person</td><td id="g1q1">—</td><td id="g1q2">—</td><td id="g1final">—</td></tr>
+          <tr><td>Contemporary Philippine Arts from the Regions</td><td id="g2q1">—</td><td id="g2q2">—</td><td id="g2final">—</td></tr>
+          <tr><td>Understanding Culture, Society and Politics</td><td id="g3q1">—</td><td id="g3q2">—</td><td id="g3final">—</td></tr>
+          <tr><td>Physical Education and Health</td><td id="g4q1">—</td><td id="g4q2">—</td><td id="g4final">—</td></tr>
+          <tr><td>Practical Research 2</td><td id="g5q1">—</td><td id="g5q2">—</td><td id="g5final">—</td></tr>
+          <tr><td>Filipino sa Piling Larang</td><td id="g6q1">—</td><td id="g6q2">—</td><td id="g6final">—</td></tr>
+          <tr><td>Social Science</td><td id="g7q1">—</td><td id="g7q2">—</td><td id="g7final">—</td></tr>
+          <tr><td>TVL 5 & 6 (Core Competencies)</td><td id="g8q1">—</td><td id="g8q2">—</td><td id="g8final">—</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+        <div class="muted" id="asOf">Generated just now</div>
+        <!-- Admin-only edit controls (hidden unless admin opens for editing) -->
+        <div id="adminEditControls" style="margin-left:auto;">
+          <button class="small-btn hidden" id="saveEditsBtn" onclick="saveEditedGrades()">Save Changes</button>
+          <button class="small-btn hidden" id="cancelEditsBtn" onclick="cancelEditMode()">Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    function logout() {
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("userPassword");
-      window.location.href = "index.html";
+<!-- Admin Login Modal -->
+<div id="adminLoginOverlay" class="admin-login-overlay" aria-hidden="true">
+  <div class="admin-login-card">
+    <h3>Administrator Login</h3>
+    <div class="hint">Enter admin credentials to open Admin Panel</div>
+    <input id="adminUser" placeholder="Username" autocomplete="username" />
+    <input id="adminPass" placeholder="Password" type="password" autocomplete="current-password" />
+    <div style="display:flex;gap:8px;">
+      <button class="btn.logout" style="flex:1" onclick="adminLogin()">Login</button>
+      <button class="btn.admin" style="flex:1" onclick="closeAdminLogin()">Cancel</button>
+    </div>
+    <div id="adminLoginError" class="muted" style="color:var(--warn);margin-top:8px;display:none;">Invalid credentials</div>
+  </div>
+</div>
+
+<!-- Admin Panel Overlay -->
+<div id="adminPanelOverlay" class="admin-panel-overlay" aria-hidden="true">
+  <div class="admin-panel" role="dialog" aria-modal="true">
+    <div class="panel-header">
+      <div>
+        <strong style="color:var(--brand)">Administrator</strong>
+        <div class="muted">Manage lessons • view progress • edit grades</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="small-btn" onclick="closeAdminPanel()">Close</button>
+        <button class="btn.logout" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <!-- Lesson Uploads -->
+      <div class="tile">
+        <h3>📂 Lesson Uploads</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="lessonFileInput" type="file" />
+          <button class="pressable" onclick="adminUploadLesson()">Upload</button>
+        </div>
+        <table style="margin-top:12px;">
+          <thead><tr><th>Filename</th><th>Date</th></tr></thead>
+          <tbody id="lessonsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Attendance -->
+      <div class="tile">
+        <h3>📝 Attendance Reports</h3>
+        <table>
+          <thead><tr><th>Student</th><th>Present</th><th>Absent</th></tr></thead>
+          <tbody id="attendanceTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Student Progress -->
+      <div class="tile">
+        <h3>📈 Student Progress</h3>
+        <div id="progressList"></div>
+      </div>
+
+      <!-- Student Management (edit grades) -->
+      <div class="tile full">
+        <h3>👥 Student Management</h3>
+        <table>
+          <thead><tr><th>Student No</th><th>Name</th><th>Avg</th><th>Action</th></tr></thead>
+          <tbody id="studentManageTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rib Bot Button with MP4 Video -->
+<button class="chatbot-btn" onclick="toggleChatbot()">
+  <video src="ai-chatbot-animated-icon-gif-download-10311520.mp4" autoplay loop muted></video>
+</button>
+<div class="chatbot-window" id="chatbotWindow">
+  <div class="chatbot-header">Rib 🤖 <button onclick="toggleChatbot()">✕</button></div>
+  <div class="chatbot-messages" id="chatbotMessages"></div>
+  <div class="chatbot-input">
+    <input type="text" id="chatbotInput" placeholder="Ask Rib..." onkeypress="if(event.key==='Enter'){sendMessage();}">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+/* -------------------------
+   Admin auth & UI controls
+   ------------------------- */
+function isAdminLogged(){ return localStorage.getItem('isAdmin') === 'true'; }
+
+function openAdmin(){
+  if(isAdminLogged()){
+    showAdminPanel();
+  } else {
+    document.getElementById('adminLoginOverlay').style.display='flex';
+    document.getElementById('adminLoginOverlay').ariaHidden = "false";
+    document.getElementById('adminLoginError').style.display='none';
+    document.getElementById('adminUser').value='';
+    document.getElementById('adminPass').value='';
+  }
+}
+function closeAdminLogin(){
+  document.getElementById('adminLoginOverlay').style.display='none';
+  document.getElementById('adminLoginOverlay').ariaHidden = "true";
+}
+function adminLogin(){
+  const u = document.getElementById('adminUser').value.trim();
+  const p = document.getElementById('adminPass').value;
+  // Credentials (case-sensitive)
+  if(u === 'AdministratorCSS' && p === 'AdminCSS123'){
+    localStorage.setItem('isAdmin','true');
+    closeAdminLogin();
+    showAdminPanel();
+  } else {
+    document.getElementById('adminLoginError').style.display='block';
+  }
+}
+function showAdminPanel(){
+  populateAdminPanel(); // prepare content
+  document.getElementById('adminPanelOverlay').style.display='flex';
+  document.getElementById('adminPanelOverlay').ariaHidden = "false";
+}
+function closeAdminPanel(){
+  document.getElementById('adminPanelOverlay').style.display='none';
+  document.getElementById('adminPanelOverlay').ariaHidden = "true";
+}
+function logout(){
+  // Clear admin session only (keeps other local data intact)
+  localStorage.removeItem('isAdmin');
+  // Redirect to index (same behavior you had before)
+  window.location.href='index.html';
+}
+
+/* -------------------------
+   Lesson uploads (admin)
+   ------------------------- */
+function adminUploadLesson(){
+  const f = document.getElementById('lessonFileInput').files[0];
+  if(!f){ alert('Select a file to upload'); return; }
+  const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+  lessons.unshift({ filename: f.name, date: new Date().toLocaleString() }); // newest first
+  localStorage.setItem('lessons', JSON.stringify(lessons));
+  populateLessonsTable();
+  document.getElementById('lessonFileInput').value='';
+}
+function populateLessonsTable(){
+  const lessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+  const tbody = document.getElementById('lessonsTableBody');
+  tbody.innerHTML='';
+  lessons.forEach(l=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.filename}</td><td>${l.date}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* -------------------------
+   Data (students / grades)
+   ------------------------- */
+const gradesData=[
+  {id:'123285120108',name:'ABILA, ROLANDO JR. CAHUTAY',g1q1:80,g1q2:85,g1final:82,g2q1:80,g2q2:84,g2final:82,g3q1:90,g3q2:92,g3final:91,g4q1:90,g4q2:88,g4final:89,g5q1:81,g5q2:85,g5final:83,g6q1:81,g6q2:84,g6final:83,g7q1:80,g7q2:82,g7final:81,g8q1:81,g8q2:85,g8final:83,remarks:'YES'},
+  {id:'123285120189',name:'CANANGA, JOHN RIB AUCENTE',g1q1:80,g1q2:85,g1final:82,g2q1:80,g2q2:84,g2final:82,g3q1:90,g3q2:92,g3final:91,g4q1:90,g4q2:88,g4final:89,g5q1:81,g5q2:85,g5final:83,g6q1:81,g6q2:84,g6final:83,g7q1:80,g7q2:82,g7final:81,g8q1:81,g8q2:85,g8final:83,remarks:'YES'},
+  {id:'123285120037',name:'ALVARADO, JOVANE RABASTO',g1q1:77,g1q2:79,g1final:78,g2q1:77,g2q2:78,g2final:78,g3q1:89,g3q2:90,g3final:89.5,g4q1:90,g4q2:91,g4final:90.5,g5q1:90,g5q2:88,g5final:89,g6q1:80,g6q2:82,g6final:81,g7q1:82,g7q2:83,g7final:82.5,g8q1:76,g8q2:78,g8final:77,remarks:'YES'}
+];
+
+/* Prebuilt attendance (demo) */
+let attendanceData = JSON.parse(localStorage.getItem('attendance') || 'null');
+if(!attendanceData){
+  attendanceData = gradesData.map(s => ({ student: s.name, present: Math.floor(36 + Math.random()*7), absent: Math.floor(Math.random()*5), id: s.id }));
+  localStorage.setItem('attendance', JSON.stringify(attendanceData));
+}
+
+/* -------------------------
+   Admin panel population
+   ------------------------- */
+function populateAdminPanel(){
+  populateLessonsTable();
+  populateAttendance();
+  populateProgress();
+  populateStudentManagement();
+}
+
+/* Attendance */
+function populateAttendance(){
+  const tbody = document.getElementById('attendanceTableBody');
+  tbody.innerHTML='';
+  attendanceData.forEach(a=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${a.student}</td><td>${a.present}</td><td>${a.absent}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* Progress shows general average as percent */
+function computeAvgFor(s){
+  let total = 0;
+  for(let i=1;i<=8;i++){
+    total += Number(s['g'+i+'final']);
+  }
+  return +(total/8).toFixed(2);
+}
+function populateProgress(){
+  const container = document.getElementById('progressList');
+  container.innerHTML='';
+  gradesData.forEach(s=>{
+    const avg = computeAvgFor(s);
+    const div = document.createElement('div');
+    div.style.marginBottom='12px';
+    div.innerHTML = `<strong>${s.name}</strong>
+      <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${Math.min(100,avg)}%">${avg}%</div></div>`;
+    container.appendChild(div);
+  });
+}
+
+/* Student management table (with Edit) */
+function populateStudentManagement(){
+  const tbody = document.getElementById('studentManageTable');
+  tbody.innerHTML='';
+  gradesData.forEach(s=>{
+    const avg = computeAvgFor(s);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${avg}</td><td><button class="small-btn" onclick="openAdminEdit('${s.id}')">Edit Grades</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* -------------------------
+   Grade overlay (view + admin edit)
+   ------------------------- */
+const overlay = document.getElementById('gradeOverlay');
+let editingStudentId = null;
+
+function initialsFromName(n){try{const parts=n.split(',')[0].trim().split(' ');return (parts[0][0]||'S')+(parts[1]?.[0]||'T');}catch{return'ST';}}
+
+function checkGrades(){
+  const sn = document.getElementById('studentNumber').value.trim();
+  document.getElementById('lookupError').style.display='none';
+  if(!sn){ document.getElementById('lookupError').textContent='Please enter your Student Number.'; document.getElementById('lookupError').style.display='block'; return; }
+  const s = gradesData.find(x=>x.id===sn);
+  if(!s){ document.getElementById('lookupError').textContent='No record found. Please check your Student Number.'; document.getElementById('lookupError').style.display='block'; return; }
+  populateOverlay(s, false);
+  overlay.classList.add('show');
+  document.addEventListener('keydown', escCloseOnce, {once:true});
+}
+
+/* Populate grade overlay; editable = true if admin editing */
+function populateOverlay(s, editable=false){
+  editingStudentId = editable ? s.id : null;
+  // fill fields
+  for(let i=1;i<=8;i++){
+    document.getElementById('g'+i+'q1').textContent = s['g'+i+'q1'];
+    document.getElementById('g'+i+'q2').textContent = s['g'+i+'q2'];
+    const finalCell = document.getElementById('g'+i+'final');
+    if(editable){
+      finalCell.innerHTML = `<input class="final-input" data-field="g${i}final" value="${s['g'+i+'final']}">`;
+    } else {
+      finalCell.textContent = s['g'+i+'final'];
     }
+  }
 
-    function toggleChatbot() {
-      const chatbot = document.getElementById("chatbot");
-      chatbot.style.display = chatbot.style.display === "flex" ? "none" : "flex";
-    }
+  const avg = computeAvgFor(s);
+  document.getElementById('dashTitle').textContent = s.name;
+  document.getElementById('dashStudentId').textContent = `Student No: ${s.id}`;
+  document.getElementById('avatarInitials').textContent = initialsFromName(s.name).toUpperCase();
+  document.getElementById('avgGrade').textContent = avg;
+  document.getElementById('remarks').textContent = s.remarks || '—';
+  document.getElementById('asOf').textContent = `Generated ${new Date().toLocaleString()}`;
 
-    // Predefined simple answers (short intro + basics)
-    const predefinedAnswers = {
-      "what is css nc ii": "CSS NC II (Computer Systems Servicing NC II) is a TESDA course that trains you in installing, maintaining, and repairing computer systems and networks.",
-      "core competency": "Core Competencies of CSS NC II include: Installing/Configuring computer systems, Setting up networks, Configuring routers, and Maintaining computer systems and networks.",
-      "basic networking": "Basic networking covers IP addressing, subnetting, router configuration, and connecting computers to form a LAN.",
-      "server roles": "Server roles include DHCP, DNS, File Server, Print Server, and Domain Controller (Active Directory).",
-    };
+  const badge = document.getElementById('statusBadge');
+  const pass = Number(avg) >= 75;
+  badge.textContent = pass ? 'Good Standing' : 'Needs Improvement';
+  badge.style.background = pass ? 'rgba(46,204,113,.15)' : 'rgba(231,76,60,.15)';
+  badge.style.border = pass ? '1px solid rgba(46,204,113,.35)' : '1px solid rgba(231,76,60,.35)';
+  badge.style.color = pass ? 'var(--ok)' : 'var(--warn)';
 
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const messages = document.getElementById("messages");
+  // Show/Hide admin edit controls
+  const saveBtn = document.getElementById('saveEditsBtn');
+  const cancelBtn = document.getElementById('cancelEditsBtn');
+  if(editingStudentId && isAdminLogged()){
+    saveBtn.classList.remove('hidden');
+    cancelBtn.classList.remove('hidden');
+  } else {
+    saveBtn.classList.add('hidden');
+    cancelBtn.classList.add('hidden');
+  }
+}
 
-      if (input.value.trim() === "") return;
+/* Admin action to open overlay in editable mode */
+function openAdminEdit(studentId){
+  if(!isAdminLogged()){ alert('You must login as admin to edit. Click Admin button'); return; }
+  const s = gradesData.find(x=>x.id===studentId);
+  if(!s) return;
+  populateOverlay(s, true);
+  overlay.classList.add('show');
+  document.addEventListener('keydown', escCloseOnce, {once:true});
+}
 
-      // User message
-      const userMsg = document.createElement("div");
-      userMsg.textContent = "You: " + input.value;
-      messages.appendChild(userMsg);
+/* Save edited finals */
+function saveEditedGrades(){
+  if(!editingStudentId) return;
+  const s = gradesData.find(x=>x.id===editingStudentId);
+  if(!s) return;
+  for(let i=1;i<=8;i++){
+    const input = document.querySelector(`[data-field="g${i}final"]`);
+    const val = parseFloat(input?.value ?? s['g'+i+'final']);
+    s['g'+i+'final'] = isNaN(val) ? s['g'+i+'final'] : val;
+  }
+  // update UI and admin tables
+  populateOverlay(s, false);
+  populateProgress();
+  populateStudentManagement();
+  populateAttendance(); // optional if attendance related
+  editingStudentId = null;
+  // hide edit controls
+  document.getElementById('saveEditsBtn').classList.add('hidden');
+  document.getElementById('cancelEditsBtn').classList.add('hidden');
+  alert('Grades updated (client-side).');
+}
 
-      // Bot reply placeholder
-      const botMsg = document.createElement("div");
-      botMsg.style.color = "orange";
-      botMsg.textContent = "Bot: Thinking...";
-      messages.appendChild(botMsg);
+/* Cancel edit mode (revert overlay to view mode) */
+function cancelEditMode(){
+  if(!editingStudentId) { closeOverlay(); return; }
+  const s = gradesData.find(x=>x.id===editingStudentId);
+  populateOverlay(s, false);
+  editingStudentId = null;
+}
 
-      messages.scrollTop = messages.scrollHeight;
+/* Overlay controls */
+function escCloseOnce(e){ if(e.key==='Escape') closeOverlay(); }
+function closeOverlay(){ overlay.classList.remove('show'); editingStudentId=null; }
 
-      const userText = input.value.toLowerCase();
+/* Keep Enter behavior for quick lookup */
+document.getElementById('studentNumber').addEventListener('keypress',e=>{ if(e.key==='Enter'){ checkGrades(); }});
 
-      // Simple predefined responses
-      if (predefinedAnswers[userText]) {
-        botMsg.textContent = "Bot: " + predefinedAnswers[userText];
-      } else {
-        botMsg.textContent = "Bot: Sorry, I can only answer basic questions about CSS NC II for now.";
-      }
+/* -------------------------
+   Chatbot (unchanged)
+   ------------------------- */
+function toggleChatbot(){
+  const bot = document.getElementById("chatbotWindow");
+  bot.style.display = (bot.style.display==="none"||bot.style.display==="") ? "flex" : "none";
+}
 
-      input.value = "";
-      messages.scrollTop = messages.scrollHeight;
-    }
+function sendMessage(){
+  const input = document.getElementById("chatbotInput");
+  const messages = document.getElementById("chatbotMessages");
+  const text = input.value.trim();
+  if(!text) return;
 
-    // Allow Enter key to send message
-    document.getElementById("userInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
-  </script>
+  const userMsg = document.createElement("div");
+  userMsg.className="message user";
+  userMsg.innerText = text;
+  messages.appendChild(userMsg);
+
+  const botMsg = document.createElement("div");
+  botMsg.className="message bot";
+  botMsg.innerText = getBotResponse(text);
+  messages.appendChild(botMsg);
+
+  messages.scrollTop = messages.scrollHeight;
+  input.value = "";
+}
+
+function getBotResponse(input){
+  input=input.toLowerCase();
+  if(input.includes("hello")||input.includes("hi")) return "Hello! I'm Rib, your virtual teacher. How can I assist you?";
+  if(input.includes("grade")) return "Enter your Student Number above to check your grades.";
+  if(input.includes("tvl")) return "TVL 5 & 6 are your core CSS NC II competencies.";
+  if(input.includes("thanks")) return "You're welcome! Keep pushing forward 💪.";
+  return "I'm Rib 🤖. Ask me about your grades, modules, or CSS NC II.";
+}
+
+/* -------------------------
+   Start-up: if admin already logged, change admin button look
+   ------------------------- */
+function updateAdminBtnState(){
+  const btn = document.getElementById('adminBtn');
+  if(isAdminLogged()){
+    btn.textContent = '🔓 Admin';
+    btn.title = 'Open Admin Panel';
+  } else {
+    btn.textContent = '🔒 Admin';
+    btn.title = 'Admin Login';
+  }
+}
+updateAdminBtnState();
+
+/* When admin panel is closed/opened, ensure admin btn state remains correct */
+document.getElementById('adminPanelOverlay').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('adminPanelOverlay')) closeAdminPanel();
+});
+document.getElementById('adminLoginOverlay').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('adminLoginOverlay')) closeAdminLogin();
+});
+
+/* When admin logs in from console or from other actions, update UI state */
+window.addEventListener('storage', () => updateAdminBtnState());
+</script>
 </body>
 </html>
-
-
-
 

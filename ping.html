@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Networking Simulator</title>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding: 20px;
+      background: #111;
+      border-bottom: 2px solid #4cafef;
+    }
+    h1 { color: #4cafef; margin: 0; font-size: 2em; }
+    p { color: #ccc; }
+
+    .container {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+      flex-wrap: wrap;
+    }
+    .pc {
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #4cafef;
+      width: 320px;
+      margin: 10px;
+      text-align: left;
+    }
+    h2 {
+      text-align: center;
+      color: #ff9800;
+    }
+    input {
+      width: 95%;
+      padding: 8px;
+      margin: 6px 0;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+    .terminal {
+      margin: 30px auto;
+      width: 90%;
+      max-width: 800px;
+      background: #000;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: left;
+      font-family: monospace;
+      min-height: 200px;
+      border: 2px solid #4cafef;
+      color: #0f0;
+      overflow-y: auto;
+    }
+    #command {
+      width: 80%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #4cafef;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #2196f3; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🖥️ Networking Practice Simulator</h1>
+    <p>Configure IP, Subnet, Gateway for PC1 & PC2 and use commands like <b>ipconfig</b> and <b>ping</b></p>
+  </header>
+
+  <div class="container">
+    <div class="pc">
+      <h2>PC1</h2>
+      <label>IP Address:</label><br>
+      <input type="text" id="pc1-ip" placeholder="e.g. 192.168.1.2"><br>
+      <label>Subnet Mask:</label><br>
+      <input type="text" id="pc1-mask" placeholder="e.g. 255.255.255.0"><br>
+      <label>Default Gateway:</label><br>
+      <input type="text" id="pc1-gw" placeholder="e.g. 192.168.1.1"><br>
+    </div>
+
+    <div class="pc">
+      <h2>PC2</h2>
+      <label>IP Address:</label><br>
+      <input type="text" id="pc2-ip" placeholder="e.g. 192.168.1.3"><br>
+      <label>Subnet Mask:</label><br>
+      <input type="text" id="pc2-mask" placeholder="e.g. 255.255.255.0"><br>
+      <label>Default Gateway:</label><br>
+      <input type="text" id="pc2-gw" placeholder="e.g. 192.168.1.1"><br>
+    </div>
+  </div>
+
+  <div class="terminal" id="terminal">
+    <p>PC1> Type a command...</p>
+  </div>
+
+  <input type="text" id="command" placeholder="Enter command (ipconfig / ping 192.168.1.3)">
+  <button onclick="runCommand()">Run</button>
+
+  <script>
+    function sameNetwork(ip1, mask1, ip2, mask2) {
+      const ip1Parts = ip1.split('.').map(Number);
+      const mask1Parts = mask1.split('.').map(Number);
+      const ip2Parts = ip2.split('.').map(Number);
+      const mask2Parts = mask2.split('.').map(Number);
+
+      if (ip1Parts.length !== 4 || ip2Parts.length !== 4) return false;
+
+      for (let i = 0; i < 4; i++) {
+        if ((ip1Parts[i] & mask1Parts[i]) !== (ip2Parts[i] & mask2Parts[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function runCommand() {
+      const cmd = document.getElementById("command").value.trim();
+      const term = document.getElementById("terminal");
+
+      const pc1 = {
+        ip: document.getElementById("pc1-ip").value.trim(),
+        mask: document.getElementById("pc1-mask").value.trim(),
+        gw: document.getElementById("pc1-gw").value.trim()
+      };
+      const pc2 = {
+        ip: document.getElementById("pc2-ip").value.trim(),
+        mask: document.getElementById("pc2-mask").value.trim(),
+        gw: document.getElementById("pc2-gw").value.trim()
+      };
+
+      let output = `PC1> ${cmd}\n`;
+
+      if (cmd === "ipconfig") {
+        output += `IP Address: ${pc1.ip || "Not set"}\n`;
+        output += `Subnet Mask: ${pc1.mask || "Not set"}\n`;
+        output += `Default Gateway: ${pc1.gw || "Not set"}\n`;
+      } else if (cmd.startsWith("ping")) {
+        const parts = cmd.split(" ");
+        if (parts.length < 2) {
+          output += "Usage: ping <IP Address>\n";
+        } else {
+          const target = parts[1];
+          if (target === pc2.ip) {
+            if (sameNetwork(pc1.ip, pc1.mask, pc2.ip, pc2.mask)) {
+              output += `Reply from ${pc2.ip}: bytes=32 time<1ms TTL=128\n`;
+              output += `Reply from ${pc2.ip}: bytes=32 time<1ms TTL=128\n`;
+              output += `Reply from ${pc2.ip}: bytes=32 time<1ms TTL=128\n`;
+              output += `Reply from ${pc2.ip}: bytes=32 time<1ms TTL=128\n`;
+              output += "Ping statistics: Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)\n";
+            } else {
+              output += "Destination host unreachable.\n";
+            }
+          } else {
+            output += "Request timed out.\n";
+          }
+        }
+      } else {
+        output += "Unknown command. Try: ipconfig or ping <IP>\n";
+      }
+
+      term.innerText += output + "\n";
+      term.scrollTop = term.scrollHeight;
+      document.getElementById("command").value = "";
+    }
+  </script>
+</body>
+</html>

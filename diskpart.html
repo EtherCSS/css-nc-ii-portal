@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DiskPart Simulator</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #0a0a0a;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    background: #111;
+    padding: 20px;
+    border-bottom: 2px solid #4cafef;
+  }
+  h1 { color: #4cafef; margin: 0; }
+  .container {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 900px;
+  }
+  .terminal {
+    background: #000;
+    color: #0f0;
+    font-family: monospace;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #4cafef;
+    min-height: 250px;
+    overflow-y: auto;
+    text-align: left;
+  }
+  #command {
+    width: 80%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-family: monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #4cafef;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  button:hover { background: #2196f3; }
+  #diskLayout {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .disk {
+    width: 150px;
+    height: 150px;
+    border: 2px solid #4cafef;
+    border-radius: 8px;
+    position: relative;
+    background: #1c1c1c;
+  }
+  .partition {
+    height: 25px;
+    margin: 2px;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 25px;
+    font-size: 12px;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💽 DiskPart Simulator</h1>
+  <p>Practice Disk Management Commands like list disk, select disk, create partition, and format.</p>
+</header>
+
+<div class="container">
+  <div class="terminal" id="terminal">C:\> Welcome to DiskPart Simulator!</div>
+  <input type="text" id="command" placeholder="Enter command e.g. list disk">
+  <button onclick="runCommand()">Run</button>
+
+  <div id="diskLayout"></div>
+</div>
+
+<script>
+let disks = [
+  { id: 0, partitions: [] },
+  { id: 1, partitions: [] }
+];
+let selectedDisk = null;
+
+function displayDisks() {
+  const layout = document.getElementById('diskLayout');
+  layout.innerHTML = '';
+  disks.forEach(disk => {
+    const diskDiv = document.createElement('div');
+    diskDiv.className = 'disk';
+    const label = document.createElement('div');
+    label.style.position = 'absolute';
+    label.style.top = '5px';
+    label.style.left = '5px';
+    label.style.fontSize = '14px';
+    label.textContent = 'Disk ' + disk.id;
+    diskDiv.appendChild(label);
+
+    disk.partitions.forEach((p, i) => {
+      const partDiv = document.createElement('div');
+      partDiv.className = 'partition';
+      partDiv.style.width = '90%';
+      partDiv.style.background = p.type === 'primary' ? '#4caf50' : '#2196f3';
+      partDiv.textContent = `${p.type} (${p.fs || 'Unformatted'})`;
+      diskDiv.appendChild(partDiv);
+    });
+
+    layout.appendChild(diskDiv);
+  });
+}
+
+function runCommand() {
+  const cmdInput = document.getElementById('command').value.trim();
+  const term = document.getElementById('terminal');
+  const cmd = cmdInput.toLowerCase();
+
+  let output = `C:\\> ${cmdInput}\n`;
+
+  if (cmd === 'list disk') {
+    disks.forEach(d => {
+      output += `Disk ${d.id} - ${d.partitions.length} partitions\n`;
+    });
+  } else if (cmd.startsWith('select disk')) {
+    const parts = cmd.split(' ');
+    if (parts.length < 3) output += '❌ Usage: select disk <number>\n';
+    else {
+      const diskNum = parseInt(parts[2]);
+      const disk = disks.find(d => d.id === diskNum);
+      if (disk) {
+        selectedDisk = disk;
+        output += `✅ Disk ${diskNum} selected.\n`;
+      } else output += `❌ Disk ${diskNum} not found.\n`;
+    }
+  } else if (cmd.startsWith('create partition')) {
+    if (!selectedDisk) output += '❌ No disk selected. Use select disk first.\n';
+    else {
+      const type = cmd.includes('primary') ? 'primary' : cmd.includes('extended') ? 'extended' : null;
+      if (!type) { output += '❌ Specify partition type: primary or extended.\n'; }
+      else {
+        selectedDisk.partitions.push({ type: type, fs: null });
+        output += `✅ ${type} partition created on Disk ${selectedDisk.id}.\n`;
+      }
+    }
+  } else if (cmd.startsWith('format')) {
+    if (!selectedDisk || selectedDisk.partitions.length === 0) output += '❌ No partition to format.\n';
+    else {
+      const lastPart = selectedDisk.partitions[selectedDisk.partitions.length - 1];
+      const fsMatch = cmd.match(/fs=(\w+)/);
+      if (!fsMatch) output += '❌ Specify filesystem type: fs=ntfs/fat32\n';
+      else {
+        lastPart.fs = fsMatch[1].toUpperCase();
+        output += `✅ Partition formatted as ${lastPart.fs}.\n`;
+      }
+    }
+  } else {
+    output += '❌ Unknown command. Try: list disk, select disk, create partition, format fs=ntfs\n';
+  }
+
+  term.innerText += output + '\n';
+  term.scrollTop = term.scrollHeight;
+  document.getElementById('command').value = '';
+  displayDisks();
+}
+
+// Initial display
+displayDisks();
+</script>
+
+</body>
+</html>

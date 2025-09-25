@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network Connection Simulator</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      padding: 20px;
+      background: #111;
+      border-bottom: 2px solid #4cafef;
+    }
+    h1 { color: #4cafef; margin: 0; font-size: 2.2em; }
+    p { color: #ccc; }
+    .workspace {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 20px auto;
+      flex-wrap: wrap;
+    }
+    .device {
+      width: 120px;
+      height: 120px;
+      background: #1c1c1c;
+      border: 2px solid #4cafef;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      font-size: 18px;
+      font-weight: bold;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .device span { font-size: 42px; margin-bottom: 6px; }
+    .device:hover { background: #2a2a2a; transform: scale(1.05); }
+    .device.dragging { opacity: 0.5; }
+
+    #canvas {
+      margin-top: 15px;
+      border: 2px dashed #4cafef;
+      width: 80%;
+      height: 300px; /* smaller canvas */
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      background: #111;
+      border-radius: 12px;
+    }
+
+    .cable {
+      position: absolute;
+      height: 4px;
+      transform-origin: 0 0;
+      border-radius: 4px;
+    }
+
+    .controls { margin: 15px; }
+    button {
+      margin: 6px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4cafef;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    button:hover { background: #2196f3; }
+    button.reset { background: #e53935; }
+    button.reset:hover { background: #c62828; }
+
+    #result {
+      margin: 15px auto;
+      padding: 12px 20px;
+      width: fit-content;
+      max-width: 80%;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      display: none; /* hidden until needed */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💻 Network Connection Simulator</h1>
+    <p>Drag devices into the workspace and test your cable connections</p>
+  </header>
+
+  <div class="workspace">
+    <div class="device" draggable="true" data-type="PC"><span>💻</span>PC</div>
+    <div class="device" draggable="true" data-type="Switch"><span>🔀</span>Switch</div>
+    <div class="device" draggable="true" data-type="Router"><span>📡</span>Router</div>
+    <div class="device" draggable="true" data-type="Server"><span>🖥️</span>Server</div>
+  </div>
+
+  <div id="canvas"></div>
+
+  <div class="controls">
+    <button onclick="connectDevices('straight')">🔵 Straight-through</button>
+    <button onclick="connectDevices('crossover')">🟠 Crossover</button>
+    <button class="reset" onclick="resetCanvas()">♻ Reset</button>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    let dragged = null;
+    let devicesOnCanvas = [];
+    let lastConnection = null;
+
+    document.querySelectorAll('.device').forEach(device => {
+      device.addEventListener('dragstart', e => {
+        dragged = device.cloneNode(true);
+      });
+    });
+
+    canvas.addEventListener('dragover', e => e.preventDefault());
+
+    canvas.addEventListener('drop', e => {
+      if (dragged) {
+        dragged.style.position = 'absolute';
+        dragged.style.left = e.offsetX - 60 + 'px';
+        dragged.style.top = e.offsetY - 60 + 'px';
+        dragged.setAttribute('draggable', false);
+        canvas.appendChild(dragged);
+        devicesOnCanvas.push(dragged);
+        dragged = null;
+      }
+    });
+
+    function connectDevices(type) {
+      if (devicesOnCanvas.length < 2) {
+        showResult('⚠ Add at least 2 devices to connect!', '#ff9800');
+        return;
+      }
+      const d1 = devicesOnCanvas[0];
+      const d2 = devicesOnCanvas[1];
+      const r1 = d1.getBoundingClientRect();
+      const r2 = d2.getBoundingClientRect();
+      const c = canvas.getBoundingClientRect();
+
+      const x1 = r1.left + r1.width / 2 - c.left;
+      const y1 = r1.top + r1.height / 2 - c.top;
+      const x2 = r2.left + r2.width / 2 - c.left;
+      const y2 = r2.top + r2.height / 2 - c.top;
+
+      const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+      const cable = document.createElement('div');
+      cable.className = 'cable';
+      cable.style.width = length + 'px';
+      cable.style.left = x1 + 'px';
+      cable.style.top = y1 + 'px';
+      cable.style.transform = `rotate(${angle}deg)`;
+      cable.style.background = (type === 'straight') ? '#4cafef' : '#ff9800';
+
+      canvas.appendChild(cable);
+
+      lastConnection = { d1, d2, type };
+      checkConnection();
+    }
+
+    function checkConnection() {
+      if (!lastConnection) return;
+      const { d1, d2, type } = lastConnection;
+      const t1 = d1.dataset.type;
+      const t2 = d2.dataset.type;
+
+      let correctType;
+      if (t1 === t2) {
+        correctType = 'crossover';
+      } else {
+        correctType = 'straight';
+      }
+
+      if (type === correctType) {
+        showResult(`✅ Correct! ${t1} ↔ ${t2} should use ${correctType.toUpperCase()} cable.`, '#4caf50');
+      } else {
+        showResult(`❌ Incorrect. ${t1} ↔ ${t2} should use ${correctType.toUpperCase()} cable.`, '#ff5252');
+      }
+    }
+
+    function showResult(message, color) {
+      const result = document.getElementById('result');
+      result.style.display = 'block';
+      result.style.background = color;
+      result.textContent = message;
+    }
+
+    function resetCanvas() {
+      canvas.innerHTML = '';
+      devicesOnCanvas = [];
+      lastConnection = null;
+      const result = document.getElementById('result');
+      result.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

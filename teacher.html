@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard - CSS NC II</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b0c10;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      background: orange;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h2 {
+      margin: 0;
+      color: black;
+    }
+    .content {
+      padding: 20px;
+    }
+    .card {
+      background: #1f2833;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(255,165,0,0.4);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: orange;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid orange;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: orange;
+      color: black;
+    }
+    .btn {
+      background: orange;
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background: darkorange;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>Teacher Dashboard - CSS NC II</h2>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <h3>📊 Student Progress</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Activity</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="studentTable">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>➕ Add Learning Material</h3>
+      <input type="text" id="materialTitle" placeholder="Enter Module Title">
+      <button class="btn" onclick="addMaterial()">Upload</button>
+      <ul id="materialList"></ul>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      window.location.href = "index.html";
+    }
+
+    // Dummy student data (simulate localStorage from student side)
+    const students = [
+      { name: "Juan Dela Cruz", activity: "Cable Drag-Drop", score: "3/3" },
+      { name: "Maria Santos", activity: "Troubleshooting Steps", score: "2/3" },
+      { name: "Pedro Reyes", activity: "Server Roles Match", score: "3/3" }
+    ];
+
+    const table = document.getElementById("studentTable");
+    students.forEach(s => {
+      const row = `<tr><td>${s.name}</td><td>${s.activity}</td><td>${s.score}</td></tr>`;
+      table.innerHTML += row;
+    });
+
+    function addMaterial() {
+      const title = document.getElementById("materialTitle").value;
+      if (title.trim() === "") return alert("Enter a module title!");
+      const list = document.getElementById("materialList");
+      const li = document.createElement("li");
+      li.textContent = title;
+      list.appendChild(li);
+      document.getElementById("materialTitle").value = "";
+    }
+  </script>
+</body>
+</html>

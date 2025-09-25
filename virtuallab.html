@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Lab - CSS NC II</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    
+    header {
+      text-align: center;
+      padding: 10px;
+      background: #111;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ff9f1a;
+    }
+
+    /* Dropdown */
+    .lab-dropdown {
+      display: inline-block;
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .lab-btn {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 10px 16px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .lab-btn:hover {
+      background: #ff9f1a;
+      color: #0a0a0a;
+    }
+
+    /* Dropdown items */
+    .lab-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #1a1a1a;
+      min-width: 200px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+      z-index: 1000;
+    }
+    .lab-content a {
+      display: block;
+      padding: 8px 14px;
+      font-size: 14px;
+      color: #fff;
+      text-decoration: none;
+    }
+    .lab-content a:hover {
+      background: #ff9f1a;
+      color: #0a0a0a;
+    }
+
+    /* Show on hover */
+    .lab-dropdown:hover .lab-content {
+      display: block;
+    }
+
+    /* Simulator box (iframe) */
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      border-top: 2px solid #222;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Virtual Lab</h1>
+    <div class="lab-dropdown">
+      <button class="lab-btn">Select Module ▾</button>
+      <div class="lab-content">
+        <a href="atx.html" target="labFrame">ATX</a>
+        <a href="bios.html" target="labFrame">BIOS</a>
+        <a href="cable.html" target="labFrame">Cables</a>
+        <a href="diskpart.html" target="labFrame">Diskpart</a>
+        <a href="network.html" target="labFrame">Network</a>
+        <a href="os.html" target="labFrame">Operating System</a>
+        <a href="ping.html" target="labFrame">Ping</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full window iframe -->
+  <iframe src="atx.html" name="labFrame"></iframe>
+
+</body>
+</html>
+
+

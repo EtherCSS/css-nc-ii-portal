@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows 10 Installation Simulator</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #111;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+  #simulator {
+    margin: 30px auto;
+    width: 750px;
+    border: 2px solid #4cafef;
+    border-radius: 12px;
+    padding: 30px;
+    background: #1c1c1c;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(76,175,239,0.5);
+  }
+  h1 { color: #4cafef; }
+  .step { display: none; text-align: left; margin-top: 20px; }
+  .active { display: block; }
+  button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    background: #4cafef;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  button:hover { background: #2196f3; }
+  select, input[type="radio"], input[type="text"], input[type="password"], label {
+    margin-top: 10px;
+    display: block;
+    font-size: 16px;
+  }
+  .partition {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px dashed #4cafef;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .selected { background: rgba(76, 175, 239, 0.3); }
+  #feedback { margin-top: 20px; font-weight: bold; color: #ff9800; min-height: 24px; }
+</style>
+</head>
+<body>
+
+<div id="simulator">
+  <h1>Windows 10 Installation Simulator</h1>
+
+  <!-- Step 1: Language & Keyboard -->
+  <div class="step active" id="step1">
+    <p><strong>Step 1:</strong> Select Language, Time, and Keyboard Layout</p>
+    <label>Language:</label>
+    <select id="language">
+      <option value="English">English</option>
+      <option value="Spanish">Spanish</option>
+      <option value="French">French</option>
+    </select>
+    <label>Time/Date Format:</label>
+    <select id="timeFormat">
+      <option value="24h">24-hour</option>
+      <option value="12h">12-hour</option>
+    </select>
+    <label>Keyboard Layout:</label>
+    <select id="keyboard">
+      <option value="US">US</option>
+      <option value="UK">UK</option>
+      <option value="FR">FR</option>
+    </select>
+    <button onclick="nextStep(1)">Next</button>
+  </div>
+
+  <!-- Step 2: Installation Type -->
+  <div class="step" id="step2">
+    <p><strong>Step 2:</strong> Choose Installation Type</p>
+    <input type="radio" name="installType" value="upgrade" id="upgrade">
+    <label for="upgrade">Upgrade</label>
+    <input type="radio" name="installType" value="custom" id="custom">
+    <label for="custom">Custom (Advanced)</label>
+    <button onclick="nextStep(2)">Next</button>
+  </div>
+
+  <!-- Step 3: Partition Management -->
+  <div class="step" id="step3">
+    <p><strong>Step 3:</strong> Select Partition / Format</p>
+    <div class="partition" data-name="Disk 0 Partition 1" data-size="100GB">Disk 0 Partition 1 (100GB)</div>
+    <div class="partition" data-name="Disk 0 Partition 2" data-size="50GB">Disk 0 Partition 2 (50GB)</div>
+    <div class="partition" data-name="Unallocated" data-size="50GB">Unallocated Space (50GB)</div>
+    <button onclick="formatPartition()">Format Partition</button>
+    <button onclick="nextStep(3)">Install</button>
+  </div>
+
+  <!-- Step 4: Installation Progress -->
+  <div class="step" id="step4">
+    <p><strong>Step 4:</strong> Installing Windows 10...</p>
+    <div id="installProgress">Progress: 0%</div>
+  </div>
+
+  <!-- Step 5: Regional Settings -->
+  <div class="step" id="step5">
+    <p><strong>Step 5:</strong> Set up Regional Settings</p>
+    <label>Region:</label>
+    <select id="region">
+      <option>United States</option>
+      <option>Philippines</option>
+      <option>United Kingdom</option>
+    </select>
+    <label>Keyboard Layout:</label>
+    <select id="kbRegion">
+      <option>US</option>
+      <option>UK</option>
+      <option>PH</option>
+    </select>
+    <button onclick="nextStep(5)">Next</button>
+  </div>
+
+  <!-- Step 6: User Account -->
+  <div class="step" id="step6">
+    <p><strong>Step 6:</strong> Create User Account</p>
+    <label>Username:</label>
+    <input type="text" id="username" placeholder="Enter username">
+    <label>Password:</label>
+    <input type="password" id="password" placeholder="Enter password">
+    <button onclick="nextStep(6)">Finish Installation</button>
+  </div>
+
+  <!-- Step 7: Finish -->
+  <div class="step" id="step7">
+    <p><strong>Installation Complete!</strong></p>
+    <p>Welcome, <span id="userWelcome"></span>!</p>
+    <p>Your system is ready to use.</p>
+  </div>
+
+  <div id="feedback"></div>
+  <button onclick="resetSimulator()">Reset Simulator</button>
+</div>
+
+<script>
+let selectedPartition = null;
+
+// Partition selection
+document.querySelectorAll('.partition').forEach(part => {
+  part.addEventListener('click', () => {
+    document.querySelectorAll('.partition').forEach(p => p.classList.remove('selected'));
+    part.classList.add('selected');
+    selectedPartition = part.dataset.name;
+    document.getElementById('feedback').textContent = `Selected Partition: ${selectedPartition}`;
+  });
+});
+
+// Format partition
+function formatPartition(){
+  if(!selectedPartition){
+    alert("Select a partition first!");
+    return;
+  }
+  document.getElementById('feedback').textContent = `Partition "${selectedPartition}" formatted successfully!`;
+}
+
+// Navigate steps
+function nextStep(step){
+  if(step === 1){
+    const lang = document.getElementById('language').value;
+    const time = document.getElementById('timeFormat').value;
+    const kb = document.getElementById('keyboard').value;
+    document.getElementById('feedback').textContent = `Language: ${lang}, Time: ${time}, Keyboard: ${kb}`;
+    showStep(2);
+    return;
+  }
+
+  if(step === 2){
+    const installType = document.querySelector('input[name="installType"]:checked');
+    if(!installType){
+      alert("Please select an installation type.");
+      return;
+    }
+    if(installType.value === "upgrade"){
+      document.getElementById('feedback').textContent = "Upgrade selected. Installing...";
+      showStep(4);
+      simulateInstall(5);
+    } else {
+      showStep(3);
+    }
+    return;
+  }
+
+  if(step === 3){
+    if(!selectedPartition){
+      alert("Select a partition before installation.");
+      return;
+    }
+    document.getElementById('feedback').textContent = `Installing on ${selectedPartition}...`;
+    showStep(4);
+    simulateInstall(5);
+    return;
+  }
+
+  if(step === 5){
+    showStep(6);
+    document.getElementById('feedback').textContent = "Regional settings saved!";
+    return;
+  }
+
+  if(step === 6){
+    const user = document.getElementById('username').value;
+    if(!user){
+      alert("Enter a username.");
+      return;
+    }
+    document.getElementById('userWelcome').textContent = user;
+    showStep(7);
+    document.getElementById('feedback').textContent = "Installation Complete!";
+    return;
+  }
+}
+
+// Show specific step
+function showStep(stepNumber){
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step'+stepNumber).classList.add('active');
+}
+
+// Installation simulation
+function simulateInstall(nextStepNumber){
+  let progress = 0;
+  const progressDiv = document.getElementById('installProgress');
+  const interval = setInterval(() => {
+    progress += Math.floor(Math.random() * 10) + 5;
+    if(progress > 100) progress = 100;
+    progressDiv.textContent = `Progress: ${progress}%`;
+    if(progress === 100){
+      clearInterval(interval);
+      document.getElementById('feedback').textContent = "✅ Installation step completed!";
+      showStep(nextStepNumber);
+    }
+  }, 500);
+}
+
+// Reset simulator
+function resetSimulator(){
+  selectedPartition = null;
+  document.querySelectorAll('.partition').forEach(p => p.classList.remove('selected'));
+  document.getElementById('language').value = "English";
+  document.getElementById('timeFormat').value = "24h";
+  document.getElementById('keyboard').value = "US";
+  document.querySelectorAll('input[name="installType"]').forEach(r => r.checked = false);
+  document.getElementById('username').value = "";
+  document.getElementById('password').value = "";
+  document.getElementById('feedback').textContent = "";
+  document.getElementById('installProgress').textContent = "Progress: 0%";
+  showStep(1);
+}
+</script>
+
+</body>
+</html>
