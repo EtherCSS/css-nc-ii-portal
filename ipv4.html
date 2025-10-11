@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPv4 Class Identification Simulator</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: radial-gradient(circle at center, #0d1b2a, #000);
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: #1b263b;
+    padding: 25px;
+    border-bottom: 4px solid #4cafef;
+  }
+
+  h1 {
+    color: #4cafef;
+    margin: 0;
+    font-size: 3rem;
+  }
+
+  header p {
+    font-size: 1.5rem;
+    color: #ccc;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #game-box {
+    background: #1e1e1e;
+    width: 90%;
+    max-width: 1400px;
+    border-radius: 20px;
+    padding: 60px;
+    box-shadow: 0 0 40px #4cafef55;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #ip-display {
+    font-size: 5rem;
+    font-weight: bold;
+    margin: 30px 0;
+    color: #4cafef;
+  }
+
+  .choices {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: #4cafef;
+    color: #111;
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 25px 60px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .btn:hover {
+    background: #1b75d6;
+    transform: scale(1.05);
+  }
+
+  #feedback {
+    margin-top: 40px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+
+  #score {
+    margin-top: 20px;
+    font-size: 2rem;
+    color: #4cafef;
+  }
+
+  #reset {
+    margin-top: 40px;
+    background: #f44336;
+    color: white;
+    font-size: 1.8rem;
+    padding: 20px 50px;
+  }
+
+  footer {
+    background: #1b263b;
+    padding: 15px;
+    font-size: 1.2rem;
+    color: #bbb;
+  }
+
+  /* Fireworks */
+  .firework {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    border-radius: 50%;
+    animation: explode 1s ease-out forwards;
+  }
+
+  @keyframes explode {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--x), var(--y)) scale(0.2);
+      opacity: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>IPv4 Class Identification Simulator</h1>
+  <p>Determine if the IP address belongs to Class A, B, or C</p>
+</header>
+
+<main>
+  <div id="game-box">
+    <div id="ip-display">Press Start to Begin</div>
+    <div class="choices">
+      <button class="btn" onclick="checkAnswer('A')">Class A</button>
+      <button class="btn" onclick="checkAnswer('B')">Class B</button>
+      <button class="btn" onclick="checkAnswer('C')">Class C</button>
+    </div>
+    <div id="feedback"></div>
+    <div id="score">Score: 0 / 0</div>
+    <button id="reset" class="btn" onclick="resetGame()">🔄 Reset Game</button>
+  </div>
+</main>
+
+<footer>Developed for TESDA - COC2 Network Configuration Practice</footer>
+
+<script>
+let score = 0;
+let total = 0;
+let currentClass = "";
+let currentIP = "";
+
+function getRandomIP() {
+  const firstOctet = Math.floor(Math.random() * 223) + 1;
+  const rest = `${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+  currentIP = `${firstOctet}.${rest}`;
+
+  if (firstOctet >= 1 && firstOctet <= 126) currentClass = "A";
+  else if (firstOctet >= 128 && firstOctet <= 191) currentClass = "B";
+  else if (firstOctet >= 192 && firstOctet <= 223) currentClass = "C";
+  else currentClass = "Unknown";
+
+  document.getElementById("ip-display").textContent = currentIP;
+}
+
+function checkAnswer(answer) {
+  if (!currentClass) return;
+  total++;
+  const feedback = document.getElementById("feedback");
+  const gameBox = document.getElementById("game-box");
+
+  if (answer === currentClass) {
+    score++;
+    feedback.textContent = `✅ Correct! ${currentIP} belongs to Class ${currentClass}.`;
+    feedback.style.color = "#4caf50";
+    triggerFireworks(gameBox);
+  } else {
+    feedback.textContent = `❌ Wrong! ${currentIP} is actually Class ${currentClass}.`;
+    feedback.style.color = "#ff5252";
+  }
+
+  document.getElementById("score").textContent = `Score: ${score} / ${total}`;
+  setTimeout(getRandomIP, 1500);
+}
+
+function triggerFireworks(container) {
+  for (let i = 0; i < 35; i++) {
+    const firework = document.createElement("div");
+    firework.classList.add("firework");
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * 250 + 50;
+    const x = Math.cos(angle) * distance + "px";
+    const y = Math.sin(angle) * distance + "px";
+    const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+
+    firework.style.setProperty("--x", x);
+    firework.style.setProperty("--y", y);
+    firework.style.background = color;
+    firework.style.left = "50%";
+    firework.style.top = "50%";
+    firework.style.transform = "translate(-50%, -50%)";
+
+    container.appendChild(firework);
+    setTimeout(() => firework.remove(), 1000);
+  }
+}
+
+function resetGame() {
+  score = 0;
+  total = 0;
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("score").textContent = "Score: 0 / 0";
+  getRandomIP();
+}
+
+window.onload = getRandomIP;
+</script>
+
+</body>
+</html>
+
+
