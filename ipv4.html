@@ -19,19 +19,14 @@
 
   header {
     background: #1b263b;
-    padding: 25px;
-    border-bottom: 4px solid #4cafef;
+    padding: 20px;
+    border-bottom: 3px solid #4cafef;
   }
 
   h1 {
     color: #4cafef;
     margin: 0;
-    font-size: 3rem;
-  }
-
-  header p {
-    font-size: 1.5rem;
-    color: #ccc;
+    font-size: 2rem;
   }
 
   main {
@@ -44,38 +39,38 @@
 
   #game-box {
     background: #1e1e1e;
-    width: 90%;
-    max-width: 1400px;
-    border-radius: 20px;
-    padding: 60px;
-    box-shadow: 0 0 40px #4cafef55;
+    width: 85%;
+    max-width: 1000px;
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 0 25px #4cafef44;
     position: relative;
     overflow: hidden;
   }
 
   #ip-display {
-    font-size: 5rem;
+    font-size: 3rem;
     font-weight: bold;
-    margin: 30px 0;
+    margin: 20px 0;
     color: #4cafef;
   }
 
   .choices {
     display: flex;
     justify-content: center;
-    gap: 50px;
-    margin-top: 40px;
+    gap: 25px;
+    margin-top: 20px;
     flex-wrap: wrap;
   }
 
   .btn {
     background: #4cafef;
     color: #111;
-    font-size: 2rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    padding: 25px 60px;
+    padding: 15px 35px;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     cursor: pointer;
     transition: 0.3s;
   }
@@ -86,38 +81,36 @@
   }
 
   #feedback {
-    margin-top: 40px;
-    font-size: 2.5rem;
+    margin-top: 30px;
+    font-size: 1.5rem;
     font-weight: bold;
     transition: 0.3s;
   }
 
   #score {
-    margin-top: 20px;
-    font-size: 2rem;
+    margin-top: 10px;
+    font-size: 1.2rem;
     color: #4cafef;
   }
 
   #reset {
-    margin-top: 40px;
+    margin-top: 30px;
     background: #f44336;
     color: white;
-    font-size: 1.8rem;
-    padding: 20px 50px;
   }
 
   footer {
     background: #1b263b;
-    padding: 15px;
-    font-size: 1.2rem;
+    padding: 10px;
+    font-size: 0.9rem;
     color: #bbb;
   }
 
   /* Fireworks */
   .firework {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background: transparent;
     border-radius: 50%;
     animation: explode 1s ease-out forwards;
@@ -139,7 +132,7 @@
 
 <header>
   <h1>IPv4 Class Identification Simulator</h1>
-  <p>Determine if the IP address belongs to Class A, B, or C</p>
+  <p>Guess whether the shown IP belongs to Class A, B, or C</p>
 </header>
 
 <main>
@@ -194,15 +187,15 @@ function checkAnswer(answer) {
   }
 
   document.getElementById("score").textContent = `Score: ${score} / ${total}`;
-  setTimeout(getRandomIP, 1500);
+  setTimeout(getRandomIP, 1200);
 }
 
 function triggerFireworks(container) {
-  for (let i = 0; i < 35; i++) {
+  for (let i = 0; i < 30; i++) {
     const firework = document.createElement("div");
     firework.classList.add("firework");
     const angle = Math.random() * 2 * Math.PI;
-    const distance = Math.random() * 250 + 50;
+    const distance = Math.random() * 200 + 50;
     const x = Math.cos(angle) * distance + "px";
     const y = Math.sin(angle) * distance + "px";
     const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
@@ -227,10 +220,12 @@ function resetGame() {
   getRandomIP();
 }
 
+// Start automatically on load
 window.onload = getRandomIP;
 </script>
 
 </body>
 </html>
+
 
 
