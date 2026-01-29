@@ -1,191 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DiskPart Simulator</title>
-<style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    background: #0a0a0a;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-  header {
-    background: #111;
-    padding: 20px;
-    border-bottom: 2px solid #4cafef;
-  }
-  h1 { color: #4cafef; margin: 0; }
-  .container {
-    margin: 20px auto;
-    width: 90%;
-    max-width: 900px;
-  }
-  .terminal {
-    background: #000;
-    color: #0f0;
-    font-family: monospace;
-    padding: 15px;
-    border-radius: 8px;
-    border: 2px solid #4cafef;
-    min-height: 250px;
-    overflow-y: auto;
-    text-align: left;
-  }
-  #command {
-    width: 80%;
-    padding: 10px;
-    border-radius: 6px;
-    border: none;
-    font-family: monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  }
-  button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    background: #4cafef;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  button:hover { background: #2196f3; }
-  #diskLayout {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap;
-  }
-  .disk {
-    width: 150px;
-    height: 150px;
-    border: 2px solid #4cafef;
-    border-radius: 8px;
-    position: relative;
-    background: #1c1c1c;
-  }
-  .partition {
-    height: 25px;
-    margin: 2px;
-    border-radius: 4px;
-    text-align: center;
-    line-height: 25px;
-    font-size: 12px;
-    color: #fff;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiskPart Virtual Console | Final</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #3b82f6; /* PowerShell Blue */
+      --success: #10b981;
+      --warning: #f59e0b;
+      --bg-dark: #09090b;
+      --surface: rgba(24, 24, 27, 0.7);
+      --terminal-bg: #0c0c0c;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+      padding: 20px;
+    }
+
+    /* --- Header --- */
+    header {
+      width: 100%; max-width: 1000px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand h1 { margin: 0; font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .brand span { color: var(--primary); }
+    .help-text { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+    /* --- Layout Grid --- */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 30px;
+      width: 100%; max-width: 1000px;
+      height: 70vh;
+    }
+
+    /* --- Terminal (Left) --- */
+    .terminal-window {
+      background: var(--terminal-bg);
+      border-radius: var(--radius);
+      border: 1px solid #333;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .term-header {
+      background: #1a1a1a;
+      padding: 10px 15px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .term-title { font-size: 12px; color: #888; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .window-ctrls { display: flex; gap: 6px; margin-left: auto; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #444; }
+
+    .term-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.6;
+    }
+    
+    .term-line { margin-bottom: 4px; word-break: break-word; white-space: pre-wrap; }
+    .prompt { color: var(--text); font-weight: 700; }
+    .cmd-text { color: var(--success); }
+    .output-text { color: #aaa; margin-left: 20px; }
+    .error-text { color: #ef4444; margin-left: 20px; }
+    .header-text { color: var(--primary); font-weight: bold; margin-left: 20px; }
+
+    .input-line {
+      display: flex; align-items: center;
+      padding: 10px 20px;
+      background: #111;
+      border-top: 1px solid #333;
+    }
+    .cmd-input {
+      flex: 1; background: transparent; border: none; color: #fff;
+      font-family: 'JetBrains Mono', monospace; font-size: 14px; margin-left: 10px;
+    }
+
+    /* --- Disk Visualizer (Right) --- */
+    .visualizer-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      display: flex; flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    
+    .panel-header { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; }
+
+    .disk-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      transition: all 0.2s;
+    }
+    .disk-card.selected { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+    .disk-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+    .disk-status { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #222; color: #888; }
+    .disk-card.selected .disk-status { background: var(--primary); color: #000; }
+
+    .disk-bar {
+      height: 30px; width: 100%;
+      background: #222;
+      border-radius: 4px;
+      display: flex;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+    
+    .partition-segment {
+      height: 100%;
+      border-right: 1px solid #000;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    .part-primary { background: #3b82f6; } /* Blue */
+    .part-extended { background: #10b981; } /* Green */
+    .part-system { background: #6366f1; } /* Indigo */
+    .part-unalloc { background: #333; color: #777; flex: 1; }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto;
+    }
+    .action-chip {
+      padding: 6px 12px; border-radius: 20px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: 0.2s;
+    }
+    .action-chip:hover { background: var(--primary); color: #000; border-color: var(--primary); }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; height: auto; }
+      .visualizer-panel { height: 400px; }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>💽 DiskPart Simulator</h1>
-  <p>Practice Disk Management Commands like list disk, select disk, create partition, and format.</p>
-</header>
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-hard-drive" style="color:var(--primary); font-size:24px;"></i>
+      <h1>DiskPart <span>Simulator</span></h1>
+    </div>
+    <div class="help-text">
+      <i class="fa-solid fa-circle-info"></i> Type 'help' for command list
+    </div>
+  </header>
 
-<div class="container">
-  <div class="terminal" id="terminal">C:\> Welcome to DiskPart Simulator!</div>
-  <input type="text" id="command" placeholder="Enter command e.g. list disk">
-  <button onclick="runCommand()">Run</button>
+  <div class="workspace">
+    
+    <div class="terminal-window">
+      <div class="term-header">
+        <div class="term-title"><i class="fa-solid fa-terminal"></i> Administrator: DiskPart</div>
+        <div class="window-ctrls">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+      <div class="term-body" id="terminalOutput">
+        <div class="term-line">Microsoft DiskPart version 10.0.19041.1</div>
+        <div class="term-line">Copyright (C) Microsoft Corporation.</div>
+        <div class="term-line">On computer: VIRTUAL-LAB-PC</div>
+        <br>
+      </div>
+      <div class="input-line">
+        <span class="prompt">DISKPART></span>
+        <input type="text" id="cmdInput" class="cmd-input" autocomplete="off" autofocus>
+      </div>
+    </div>
 
-  <div id="diskLayout"></div>
-</div>
+    <div class="visualizer-panel">
+      <div class="panel-header">Disk Management</div>
+      <div id="diskContainer" style="display:flex; flex-direction:column; gap:15px;">
+        </div>
 
-<script>
-let disks = [
-  { id: 0, partitions: [] },
-  { id: 1, partitions: [] }
-];
-let selectedDisk = null;
+      <div style="margin-top:auto;">
+        <div class="panel-header" style="margin-bottom:10px;">Quick Actions</div>
+        <div class="quick-actions">
+          <div class="action-chip" onclick="autoType('list disk')">list disk</div>
+          <div class="action-chip" onclick="autoType('select disk 0')">select disk 0</div>
+          <div class="action-chip" onclick="autoType('clean')">clean</div>
+          <div class="action-chip" onclick="autoType('create partition primary')">create primary</div>
+          <div class="action-chip" onclick="autoType('format fs=ntfs quick')">format</div>
+          <div class="action-chip" onclick="autoType('assign letter=E')">assign letter</div>
+          <div class="action-chip" onclick="autoType('delete partition')">delete part</div>
+          <div class="action-chip" onclick="autoType('exit')">exit</div>
+        </div>
+      </div>
+    </div>
 
-function displayDisks() {
-  const layout = document.getElementById('diskLayout');
-  layout.innerHTML = '';
-  disks.forEach(disk => {
-    const diskDiv = document.createElement('div');
-    diskDiv.className = 'disk';
-    const label = document.createElement('div');
-    label.style.position = 'absolute';
-    label.style.top = '5px';
-    label.style.left = '5px';
-    label.style.fontSize = '14px';
-    label.textContent = 'Disk ' + disk.id;
-    diskDiv.appendChild(label);
+  </div>
 
-    disk.partitions.forEach((p, i) => {
-      const partDiv = document.createElement('div');
-      partDiv.className = 'partition';
-      partDiv.style.width = '90%';
-      partDiv.style.background = p.type === 'primary' ? '#4caf50' : '#2196f3';
-      partDiv.textContent = `${p.type} (${p.fs || 'Unformatted'})`;
-      diskDiv.appendChild(partDiv);
-    });
+  <script>
+    // --- Data Model ---
+    const state = {
+      disks: [
+        { id: 0, size: '500 GB', partitions: [], selected: false },
+        { id: 1, size: '1 TB', partitions: [], selected: false }
+      ],
+      selectedDiskId: null,
+      selectedPartIndex: null, // Track selected partition (0-based)
+      history: []
+    };
 
-    layout.appendChild(diskDiv);
-  });
-}
+    const termBody = document.getElementById('terminalOutput');
+    const cmdInput = document.getElementById('cmdInput');
+    const diskContainer = document.getElementById('diskContainer');
 
-function runCommand() {
-  const cmdInput = document.getElementById('command').value.trim();
-  const term = document.getElementById('terminal');
-  const cmd = cmdInput.toLowerCase();
+    // --- Core Functions ---
+    function renderDisks() {
+      diskContainer.innerHTML = '';
+      state.disks.forEach(disk => {
+        const isDiskSel = state.selectedDiskId === disk.id;
+        
+        let partsHTML = '';
+        if(disk.partitions.length === 0) {
+          partsHTML = `<div class="partition-segment part-unalloc">Unallocated</div>`;
+        } else {
+          disk.partitions.forEach((p, index) => {
+            const isPartSel = (isDiskSel && state.selectedPartIndex === index);
+            
+            // Determine Color Class
+            let colorClass = 'part-primary';
+            if (p.type === 'extended') colorClass = 'part-extended';
+            if (p.type === 'system') colorClass = 'part-system';
+            
+            // Build Label (e.g., "C: NTFS")
+            let label = p.type;
+            if (p.formatted) label = p.fs.toUpperCase();
+            if (p.letter) label += ` (${p.letter}:)`;
+            if (p.active) label += ` <i class="fa-solid fa-bolt" title="Active"></i>`;
 
-  let output = `C:\\> ${cmdInput}\n`;
+            // Selection Border Style for the partition segment
+            const borderStyle = isPartSel ? 'border: 2px solid #fff; box-shadow: 0 0 10px var(--primary); z-index:10;' : '';
 
-  if (cmd === 'list disk') {
-    disks.forEach(d => {
-      output += `Disk ${d.id} - ${d.partitions.length} partitions\n`;
-    });
-  } else if (cmd.startsWith('select disk')) {
-    const parts = cmd.split(' ');
-    if (parts.length < 3) output += '❌ Usage: select disk <number>\n';
-    else {
-      const diskNum = parseInt(parts[2]);
-      const disk = disks.find(d => d.id === diskNum);
-      if (disk) {
-        selectedDisk = disk;
-        output += `✅ Disk ${diskNum} selected.\n`;
-      } else output += `❌ Disk ${diskNum} not found.\n`;
+            partsHTML += `<div class="partition-segment ${colorClass}" style="flex:1; ${borderStyle}">${label}</div>`;
+          });
+        }
+
+        const card = document.createElement('div');
+        card.className = `disk-card ${isDiskSel ? 'selected' : ''}`;
+        card.innerHTML = `
+          <div class="disk-info">
+            <span><i class="fa-solid fa-hard-drive"></i> Disk ${disk.id} (${disk.size})</span>
+            <span class="disk-status">${isDiskSel ? 'DISK SELECTED' : 'ONLINE'}</span>
+          </div>
+          <div class="disk-bar">
+            ${partsHTML}
+          </div>
+        `;
+        diskContainer.appendChild(card);
+      });
     }
-  } else if (cmd.startsWith('create partition')) {
-    if (!selectedDisk) output += '❌ No disk selected. Use select disk first.\n';
-    else {
-      const type = cmd.includes('primary') ? 'primary' : cmd.includes('extended') ? 'extended' : null;
-      if (!type) { output += '❌ Specify partition type: primary or extended.\n'; }
+
+    function print(text, type = '') {
+      const line = document.createElement('div');
+      line.className = 'term-line';
+      
+      if(type === 'cmd') {
+        line.innerHTML = `<span class="prompt">DISKPART></span> <span class="cmd-text">${text}</span>`;
+      } else if (type === 'error') {
+        line.className = 'term-line error-text';
+        line.innerText = text;
+      } else if (type === 'header') {
+        line.className = 'term-line header-text';
+        line.innerText = text;
+      } else {
+        line.className = 'term-line output-text';
+        line.innerText = text;
+      }
+      termBody.appendChild(line);
+      termBody.scrollTop = termBody.scrollHeight;
+    }
+
+    // --- Command Logic ---
+    function processCommand(raw) {
+      const cmd = raw.trim().toLowerCase().replace(/\s+/g, ' '); // Normalize spaces
+      if(!cmd) return;
+
+      print(raw, 'cmd'); 
+
+      // --- HELP ---
+      if (cmd === 'help') {
+        print("Microsoft DiskPart Command List:", 'header');
+        print("--------------------------------");
+        print(" LIST DISK          - Display a list of disks");
+        print(" LIST PARTITION     - Display partitions on selected disk");
+        print(" SELECT DISK n      - Shift focus to a specific disk");
+        print(" SELECT PARTITION n - Shift focus to a specific partition");
+        print(" CLEAN              - Clear configuration information from disk");
+        print(" CREATE PARTITION PRIMARY - Create a primary partition");
+        print(" DELETE PARTITION   - Delete the selected partition");
+        print(" ACTIVE             - Mark the selected partition as active");
+        print(" FORMAT FS=NTFS     - Format the selected volume");
+        print(" ASSIGN LETTER=x    - Assign a drive letter");
+        print(" EXIT               - Exit DiskPart");
+      }
+
+      // --- LIST DISK ---
+      else if (cmd === 'list disk') {
+        print(`  Disk ###  Status         Size     Free     Dyn  Gpt`);
+        print(`  --------  -------------  -------  -------  ---  ---`);
+        state.disks.forEach(d => {
+          const selMarker = d.id === state.selectedDiskId ? '*' : ' ';
+          print(` ${selMarker}Disk ${d.id}    Online         ${d.size}      0 B`);
+        });
+      }
+
+      // --- LIST PARTITION ---
+      else if (cmd === 'list partition') {
+        if (state.selectedDiskId === null) {
+          print("There is no disk selected to list partitions.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          if(disk.partitions.length === 0) {
+            print("There are no partitions on this disk to show.");
+          } else {
+            print(`  Partition ###  Type              Size     Offset`);
+            print(`  -------------  ----------------  -------  -------`);
+            disk.partitions.forEach((p, i) => {
+              const selMarker = state.selectedPartIndex === i ? '*' : ' ';
+              print(` ${selMarker}Partition ${i+1}    ${p.type.padEnd(16)}  100 GB   1024 KB`);
+            });
+          }
+        }
+      }
+
+      // --- SELECT DISK ---
+      else if (cmd.startsWith('select disk')) {
+        const parts = cmd.split(' ');
+        const id = parseInt(parts[2]);
+        if (!isNaN(id) && state.disks.find(d => d.id === id)) {
+          state.selectedDiskId = id;
+          state.selectedPartIndex = null; // Reset partition selection
+          print(`Disk ${id} is now the selected disk.`);
+          renderDisks();
+        } else {
+          print("The specified disk is not valid.", 'error');
+        }
+      }
+
+      // --- SELECT PARTITION ---
+      else if (cmd.startsWith('select partition')) {
+        if (state.selectedDiskId === null) {
+          print("There is no disk selected.", 'error');
+        } else {
+          const parts = cmd.split(' ');
+          const index = parseInt(parts[2]); // User types 1-based index
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          
+          if (!isNaN(index) && disk.partitions[index - 1]) {
+            state.selectedPartIndex = index - 1; // Store as 0-based
+            print(`Partition ${index} is now the selected partition.`);
+            renderDisks();
+          } else {
+            print("The specified partition is not valid.", 'error');
+          }
+        }
+      }
+
+      // --- CLEAN ---
+      else if (cmd === 'clean') {
+        if (state.selectedDiskId === null) {
+          print("There is no disk selected.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          disk.partitions = [];
+          state.selectedPartIndex = null;
+          print("DiskPart succeeded in cleaning the disk.");
+          renderDisks();
+        }
+      }
+
+      // --- CREATE PARTITION ---
+      else if (cmd.startsWith('create partition')) {
+        if (state.selectedDiskId === null) {
+          print("There is no disk selected.", 'error');
+        } else {
+          const type = cmd.includes('primary') ? 'primary' : 'extended';
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          
+          if(disk.partitions.length >= 4) {
+            print("No usable free extent could be found.", 'error');
+          } else {
+            // Add new partition
+            disk.partitions.push({ 
+              type: type, 
+              formatted: false, 
+              fs: null, 
+              active: false,
+              letter: null
+            });
+            // Auto-select the new partition
+            state.selectedPartIndex = disk.partitions.length - 1; 
+            print(`DiskPart succeeded in creating the specified partition.`);
+            renderDisks();
+          }
+        }
+      }
+
+      // --- DELETE PARTITION ---
+      else if (cmd === 'delete partition') {
+        if (state.selectedDiskId === null || state.selectedPartIndex === null) {
+          print("There is no partition selected.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          disk.partitions.splice(state.selectedPartIndex, 1);
+          state.selectedPartIndex = null;
+          print("DiskPart successfully deleted the selected partition.");
+          renderDisks();
+        }
+      }
+
+      // --- ACTIVE ---
+      else if (cmd === 'active') {
+        if (state.selectedDiskId === null || state.selectedPartIndex === null) {
+          print("There is no partition selected.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          const part = disk.partitions[state.selectedPartIndex];
+          
+          // Clear active from others on this disk
+          disk.partitions.forEach(p => p.active = false);
+          part.active = true;
+          
+          print("DiskPart marked the current partition as active.");
+          renderDisks();
+        }
+      }
+
+      // --- FORMAT ---
+      else if (cmd.startsWith('format')) {
+        if (state.selectedDiskId === null || state.selectedPartIndex === null) {
+          print("There is no volume selected.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          const part = disk.partitions[state.selectedPartIndex];
+          
+          const fsMatch = cmd.match(/fs=(\w+)/);
+          const fs = fsMatch ? fsMatch[1] : 'ntfs';
+          
+          print("  100 percent completed");
+          part.formatted = true;
+          part.fs = fs;
+          print(`DiskPart successfully formatted the volume.`);
+          renderDisks();
+        }
+      }
+
+      // --- ASSIGN ---
+      else if (cmd.startsWith('assign')) {
+        if (state.selectedDiskId === null || state.selectedPartIndex === null) {
+          print("There is no volume selected.", 'error');
+        } else {
+          const disk = state.disks.find(d => d.id === state.selectedDiskId);
+          const part = disk.partitions[state.selectedPartIndex];
+          
+          // Check for specific letter
+          const letterMatch = cmd.match(/letter=(\w)/);
+          const letter = letterMatch ? letterMatch[1].toUpperCase() : 'E'; // Default to E if not specified
+          
+          part.letter = letter;
+          print(`DiskPart successfully assigned the drive letter or mount point.`);
+          renderDisks();
+        }
+      }
+
+      // --- EXIT ---
+      else if (cmd === 'exit') {
+        print("Leaving DiskPart...");
+        setTimeout(() => {
+             window.location.reload();
+        }, 1000);
+      }
+
+      // --- UNKNOWN ---
       else {
-        selectedDisk.partitions.push({ type: type, fs: null });
-        output += `✅ ${type} partition created on Disk ${selectedDisk.id}.\n`;
+        print(`The command is not valid. Type "HELP" for list.`, 'error');
       }
     }
-  } else if (cmd.startsWith('format')) {
-    if (!selectedDisk || selectedDisk.partitions.length === 0) output += '❌ No partition to format.\n';
-    else {
-      const lastPart = selectedDisk.partitions[selectedDisk.partitions.length - 1];
-      const fsMatch = cmd.match(/fs=(\w+)/);
-      if (!fsMatch) output += '❌ Specify filesystem type: fs=ntfs/fat32\n';
-      else {
-        lastPart.fs = fsMatch[1].toUpperCase();
-        output += `✅ Partition formatted as ${lastPart.fs}.\n`;
+
+    // --- Event Listeners ---
+    cmdInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        processCommand(cmdInput.value);
+        cmdInput.value = '';
       }
+    });
+
+    function autoType(text) {
+      cmdInput.value = text;
+      cmdInput.focus();
     }
-  } else {
-    output += '❌ Unknown command. Try: list disk, select disk, create partition, format fs=ntfs\n';
-  }
 
-  term.innerText += output + '\n';
-  term.scrollTop = term.scrollHeight;
-  document.getElementById('command').value = '';
-  displayDisks();
-}
-
-// Initial display
-displayDisks();
-</script>
-
+    // Init
+    renderDisks();
+    
+  </script>
 </body>
 </html>

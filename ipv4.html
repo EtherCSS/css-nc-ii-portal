@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP Class Quiz | Network Sim</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #00e6e6;
+      --primary-dim: rgba(0, 230, 230, 0.1);
+      --bg-dark: #09090b;
+      --surface: #18181b;
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% 0%, rgba(0, 230, 230, 0.05) 0%, transparent 50%);
+      padding: 20px;
+    }
+
+    /* --- Header --- */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 { margin: 0; color: var(--primary); font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    p { margin: 8px 0 0; font-size: 15px; color: var(--text-muted); }
+
+    /* --- Game Card --- */
+    .game-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    /* Visual Feedback State */
+    .game-card.correct { border-color: var(--success); box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
+    .game-card.wrong { border-color: var(--error); box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
+
+    .ip-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      border: 1px dashed var(--surface-border);
+      letter-spacing: 1px;
+    }
+
+    /* Buttons */
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .btn-choice {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-choice:hover { background: var(--primary-dim); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+    .btn-choice:active { transform: translateY(0); }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--surface-border);
+      padding-top: 20px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .score-val { color: var(--primary); font-weight: 700; }
+
+    /* --- Reference Table (Cheat Sheet) --- */
+    .cheat-sheet {
+      margin-top: 40px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border: 1px solid var(--surface-border);
+    }
+    .cheat-sheet table { width: 100%; border-collapse: collapse; }
+    .cheat-sheet th { text-align: left; color: var(--primary); padding-bottom: 8px; border-bottom: 1px solid var(--surface-border); }
+    .cheat-sheet td { padding: 8px 0; }
+
+    /* Reset Button */
+    .btn-reset {
+      margin-top: 20px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: 0.2s;
+    }
+    .btn-reset:hover { color: #fff; }
+
+    /* Animations */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+    .shake { animation: shake 0.4s; }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><i class="fa-solid fa-network-wired"></i> IP Class Quiz</h1>
+    <p>Identify the Network Class (A, B, or C) based on the first octet.</p>
+  </header>
+
+  <div class="game-card" id="gameCard">
+    <div class="ip-display" id="ipText">192.168.1.1</div>
+    
+    <div class="choices">
+      <button class="btn-choice" onclick="handleGuess('A')">Class A</button>
+      <button class="btn-choice" onclick="handleGuess('B')">Class B</button>
+      <button class="btn-choice" onclick="handleGuess('C')">Class C</button>
+    </div>
+
+    <div id="feedbackText" style="height: 20px; margin-bottom: 10px; font-weight: 600;"></div>
+
+    <div class="stats-bar">
+      <div>Streak: <span id="streak" class="score-val">0</span></div>
+      <div>Score: <span id="score" class="score-val">0</span> / <span id="total">0</span></div>
+    </div>
+  </div>
+
+  <button class="btn-reset" onclick="resetGame()">
+    <i class="fa-solid fa-rotate-right"></i> Reset Progress
+  </button>
+
+  <div class="cheat-sheet">
+    <table>
+      <thead><tr><th>Class</th><th>Range (1st Octet)</th><th>Use Case</th></tr></thead>
+      <tbody>
+        <tr><td>Class A</td><td>1 - 126</td><td>Large Networks (ISPs)</td></tr>
+        <tr><td>Class B</td><td>128 - 191</td><td>Medium Networks (Universities)</td></tr>
+        <tr><td>Class C</td><td>192 - 223</td><td>Small Networks (Home/Office)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Game State
+    let currentClass = '';
+    let score = 0;
+    let total = 0;
+    let streak = 0;
+
+    const ipText = document.getElementById('ipText');
+    const feedback = document.getElementById('feedbackText');
+    const card = document.getElementById('gameCard');
+    
+    // UI Elements
+    const elScore = document.getElementById('score');
+    const elTotal = document.getElementById('total');
+    const elStreak = document.getElementById('streak');
+
+    function generateIP() {
+      // Logic to generate valid Class A, B, C IPs only
+      // Class A: 1-126
+      // Class B: 128-191
+      // Class C: 192-223
+      // We skip 127 (Loopback) and >223 (Multicast/Experimental) for this basic quiz
+      
+      const type = Math.random();
+      let firstOctet;
+
+      if (type < 0.33) {
+        currentClass = 'A';
+        firstOctet = Math.floor(Math.random() * 126) + 1;
+      } else if (type < 0.66) {
+        currentClass = 'B';
+        firstOctet = Math.floor(Math.random() * (191 - 128 + 1)) + 128;
+      } else {
+        currentClass = 'C';
+        firstOctet = Math.floor(Math.random() * (223 - 192 + 1)) + 192;
+      }
+
+      const oct2 = Math.floor(Math.random() * 256);
+      const oct3 = Math.floor(Math.random() * 256);
+      const oct4 = Math.floor(Math.random() * 256);
+
+      ipText.innerText = `${firstOctet}.${oct2}.${oct3}.${oct4}`;
+      
+      // Reset visuals
+      card.className = 'game-card';
+      feedback.innerText = 'Select a Class...';
+      feedback.style.color = 'var(--text-muted)';
+    }
+
+    function handleGuess(guess) {
+      if(card.classList.contains('correct') || card.classList.contains('wrong')) return; // Prevent double click
+
+      total++;
+      
+      if (guess === currentClass) {
+        // Correct
+        score++;
+        streak++;
+        card.classList.add('correct');
+        feedback.innerText = "Correct! Well done.";
+        feedback.style.color = "var(--success)";
+      } else {
+        // Wrong
+        streak = 0;
+        card.classList.add('wrong');
+        card.classList.add('shake');
+        feedback.innerText = `Wrong! That was Class ${currentClass}.`;
+        feedback.style.color = "var(--error)";
+      }
+
+      updateStats();
+
+      // Next Round Delay
+      setTimeout(() => {
+        card.classList.remove('shake'); // clear animation class
+        generateIP();
+      }, 1200);
+    }
+
+    function updateStats() {
+      elScore.innerText = score;
+      elTotal.innerText = total;
+      elStreak.innerText = streak;
+    }
+
+    function resetGame() {
+      score = 0;
+      total = 0;
+      streak = 0;
+      updateStats();
+      generateIP();
+    }
+
+    // Init
+    generateIP();
+
+  </script>
+</body>
+</html>

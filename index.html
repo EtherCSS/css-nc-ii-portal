@@ -1,106 +1,238 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CSS NC II — Portal (Video background)</title>
-<style>
-:root{--accent:#ff7200;--accent-dark:#ff8f3a;--panel:rgba(0,0,0,0.75);--muted:#c7cbd0;--radius:10px;--fw:600;}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:'Segoe UI',Roboto,Arial,sans-serif;color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
-#bg-video{position:fixed; inset:0; width:100%; height:100%; object-fit:cover; z-index:-2; filter:brightness(0.65) contrast(1);}
-body.video-failed::before{content:"";position:fixed; inset:0; background:url('1.jpg') center/cover no-repeat; z-index:-2; filter:brightness(0.65);}
-.bg-overlay{position:fixed; inset:0; z-index:-1; background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.65)); pointer-events:none;}
-.wrap{min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:36px; gap:28px; position:relative;}
-.hero{max-width:740px; margin-top:40px;}
-.logo{display:inline-flex; align-items:center; gap:12px; font-weight:var(--fw); letter-spacing:0.3px; font-size:20px; color:var(--accent);}
-h1{font-size:48px; line-height:1.05; margin-top:18px;}
-h1 span{ color:var(--accent); font-size:56px;}
-p.lead{ color:var(--muted); margin-top:18px; font-size:17px; max-width:620px;}
-.card{width:320px; background:var(--panel); padding:22px; border-radius:var(--radius); margin-top:28px; box-shadow:0 10px 30px rgba(0,0,0,0.6);}
-.card h2{ color:var(--accent); text-align:center; margin-bottom:12px;}
-.field{ margin-top:12px;}
-label{ display:block; color:var(--muted); font-size:13px; margin-bottom:6px;}
-input[type="text"], input[type="password"]{width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); color:#fff; font-size:15px;}
-.btn{display:inline-block; width:100%; padding:11px 12px; margin-top:14px; border-radius:8px; font-weight:700; border:none; cursor:pointer; background:linear-gradient(90deg,var(--accent),var(--accent-dark)); color:#0b0b0b;}
-.ghost{background:transparent; color:var(--accent); border:1px solid rgba(255,255,255,0.06); margin-top:10px;}
-.msg{ margin-top:10px; color:#ffbcbc; font-size:13px; display:none;}
-.hint{ font-size:13px; color:var(--muted); margin-top:10px; text-align:center;}
-@media (max-width:980px){.wrap{ flex-direction:column; align-items:center; padding:18px; overflow:auto; } .hero{ text-align:center; } .card{ order:2; width:92%; } h1{ font-size:34px; }}
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS NC II — Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#ff7200',
+                            dark: '#e66000',
+                            glow: 'rgba(255, 114, 0, 0.5)'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom scrollbar for aesthetic consistency */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: #1a1a1a; }
+        body::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.65);
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
-<body>
-<video id="bg-video" autoplay muted loop playsinline>
-  <source src="background.mp4" type="video/mp4">
-</video>
-<div class="bg-overlay" aria-hidden="true"></div>
+<body class="h-screen w-full overflow-hidden bg-slate-900 text-white relative flex items-center justify-center">
 
-<div class="wrap">
-  <div class="hero">
-    <div class="logo">🔧 CSS NC II — Portal</div>
-    <h1>Computer Systems Servicing<br><span>NC II</span></h1>
-    <p class="lead">A training portal — modules, discussions and resources for TVL / CSS learners and teachers.</p>
-  </div>
+    <video id="bg-video" autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0">
+        <source src="background.mp4" type="video/mp4">
+    </video>
 
-  <div class="card" id="loginCard" role="region" aria-label="Login form">
-    <h2>Login / Register</h2>
-    <div class="field"><label for="user">Username</label><input id="user" type="text" placeholder="Enter username" autocomplete="username"></div>
-    <div class="field"><label for="pass">Password</label><input id="pass" type="password" placeholder="Enter password" autocomplete="current-password"></div>
-    <button class="btn" id="btnLogin">Sign in</button>
-    <button class="btn ghost" id="btnRegister">Register</button>
-    <div class="msg" id="loginMsg" role="status" aria-live="polite"></div>
-  </div>
-</div>
+    <div class="absolute inset-0 z-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40"></div>
 
-<script>
-(function(){
-  const btnLogin=document.getElementById('btnLogin');
-  const btnRegister=document.getElementById('btnRegister');
-  const userIn=document.getElementById('user');
-  const passIn=document.getElementById('pass');
-  const msg=document.getElementById('loginMsg');
+    <div class="relative z-10 w-full max-w-6xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="order-2 lg:order-1 text-center lg:text-left animate-slide-up">
+            <div class="inline-flex items-center gap-3 mb-6 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <i class="fa-solid fa-microchip text-brand"></i>
+                <span class="text-xs font-semibold tracking-wider uppercase text-slate-300">Technical Vocational Portal</span>
+            </div>
+            
+            <h1 class="text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4">
+                Computer Systems <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand to-yellow-400">Servicing NC II</span>
+            </h1>
+            
+            <p class="text-slate-300 text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Access your training modules, assessments, and technical resources. A centralized platform for TVL/CSS learners and instructors.
+            </p>
 
-  btnLogin.addEventListener('click', handleLogin);
-  btnRegister.addEventListener('click', handleRegister);
+            <div class="mt-8 flex gap-4 justify-center lg:justify-start text-sm font-medium text-slate-400">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-brand"></i> TESDA Aligned</span>
+                <span class="flex items-center gap-2"><i class="fa-solid fa-check-circle text-brand"></i> 24/7 Access</span>
+            </div>
+        </div>
 
-  userIn.addEventListener('keydown', e => {if(e.key==='Enter') handleLogin();});
-  passIn.addEventListener('keydown', e => {if(e.key==='Enter') handleLogin();});
+        <div class="order-1 lg:order-2 flex justify-center lg:justify-end animate-fade-in delay-100">
+            <div class="glass-panel w-full max-w-[400px] p-8 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand to-transparent opacity-50"></div>
 
-  function handleLogin(){
-    const username=userIn.value.trim();
-    const password=passIn.value;
-    if(!username || !password){ showMsg('Enter username and password'); return; }
+                <h2 class="text-2xl font-bold text-white mb-1">Welcome Back</h2>
+                <p class="text-slate-400 text-sm mb-8">Enter your credentials to access the portal. </p>
 
-    const users = JSON.parse(localStorage.getItem('users')||'[]');
-    const found = users.find(u => u.username===username && u.password===password);
-    if(!found){ showMsg('Invalid username or password'); return; }
+                <div class="space-y-5">
+                    <div class="relative group/input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-slate-500 group-focus-within/input:text-brand transition-colors"></i>
+                        </div>
+                        <input type="text" id="user" autocomplete="username" placeholder="Username" 
+                            class="block w-full pl-10 pr-3 py-3 bg-white/5 border border-white/10 rounded-xl text-sm placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all text-white">
+                    </div>
 
-    localStorage.setItem('css_session', JSON.stringify(found));
-    window.location.href='dashboard.html';
-  }
+                    <div class="relative group/input">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-slate-500 group-focus-within/input:text-brand transition-colors"></i>
+                        </div>
+                        <input type="password" id="pass" autocomplete="current-password" placeholder="Password" 
+                            class="block w-full pl-10 pr-3 py-3 bg-white/5 border border-white/10 rounded-xl text-sm placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all text-white">
+                    </div>
 
-  function handleRegister(e){
-    e.preventDefault(); // prevent reload
-    const username=userIn.value.trim();
-    const password=passIn.value;
-    if(!username || !password){ showMsg('Enter username and password'); return; }
+                    <button id="btnLogin" class="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3 rounded-xl shadow-lg shadow-brand/20 transition-all transform active:scale-95">
+                        Sign In
+                    </button>
+                    
+                    <button id="btnRegister" class="w-full bg-transparent border border-white/20 hover:bg-white/5 text-slate-300 font-medium py-3 rounded-xl transition-all">
+                        Create Account
+                    </button>
+                </div>
 
-    let users = JSON.parse(localStorage.getItem('users')||'[]');
-    if(users.find(u => u.username===username)){ showMsg('Username already exists'); return; }
+                <div class="mt-6 text-center">
+                    <a href="#" class="text-xs text-slate-500 hover:text-brand transition-colors">Forgot your password?</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    const newUser={username, password, name:username, role:'Instructor'};
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    showMsg('✅ User registered successfully! You can now login.');
-    userIn.value=''; passIn.value='';
-  }
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full opacity-0 transition-all duration-300">
+        <div class="flex items-center gap-3 bg-slate-800 border border-slate-700 px-4 py-3 rounded-lg shadow-2xl">
+            <div id="toastIcon"></div>
+            <div>
+                <h4 id="toastTitle" class="text-sm font-bold text-white">Notification</h4>
+                <p id="toastMsg" class="text-xs text-slate-400">Message content here.</p>
+            </div>
+        </div>
+    </div>
 
-  function showMsg(text){
-    msg.style.display='block';
-    msg.textContent=text;
-  }
-})();
-</script>
+    <script>
+        (function(){
+            const btnLogin = document.getElementById('btnLogin');
+            const btnRegister = document.getElementById('btnRegister');
+            const userIn = document.getElementById('user');
+            const passIn = document.getElementById('pass');
+
+            btnLogin.addEventListener('click', handleLogin);
+            btnRegister.addEventListener('click', handleRegister);
+
+            // Allow Enter key to submit
+            [userIn, passIn].forEach(input => {
+                input.addEventListener('keydown', e => {
+                    if(e.key === 'Enter') handleLogin();
+                });
+            });
+
+            function handleLogin(){
+                const username = userIn.value.trim();
+                const password = passIn.value;
+
+                if(!username || !password){ 
+                    showToast('Error', 'Please enter both username and password.', 'error'); 
+                    return; 
+                }
+
+                // Simulate loading state
+                btnLogin.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking...';
+                
+                setTimeout(() => {
+                    const users = JSON.parse(localStorage.getItem('users') || '[]');
+                    const found = users.find(u => u.username === username && u.password === password);
+                    
+                    if(!found){ 
+                        showToast('Access Denied', 'Invalid username or password.', 'error');
+                        btnLogin.textContent = 'Sign In';
+                        return; 
+                    }
+
+                    localStorage.setItem('css_session', JSON.stringify(found));
+                    showToast('Success', 'Login successful. Redirecting...', 'success');
+                    
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                }, 600);
+            }
+
+            function handleRegister(e){
+                e.preventDefault();
+                const username = userIn.value.trim();
+                const password = passIn.value;
+
+                if(!username || !password){ 
+                    showToast('Missing Info', 'Enter a username and password to register.', 'warning'); 
+                    return; 
+                }
+
+                let users = JSON.parse(localStorage.getItem('users') || '[]');
+                
+                if(users.find(u => u.username === username)){ 
+                    showToast('Error', 'Username already taken.', 'error'); 
+                    return; 
+                }
+
+                const newUser = { username, password, name: username, role: 'Instructor' };
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                showToast('Welcome!', 'Account created successfully. Please login.', 'success');
+                userIn.value = ''; 
+                passIn.value = '';
+            }
+
+            // Modern Toast Notification System
+            function showToast(title, message, type){
+                const toast = document.getElementById('toast');
+                const toastTitle = document.getElementById('toastTitle');
+                const toastMsg = document.getElementById('toastMsg');
+                const toastIcon = document.getElementById('toastIcon');
+
+                toastTitle.textContent = title;
+                toastMsg.textContent = message;
+
+                // Icon logic
+                if(type === 'success') {
+                    toastIcon.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-xl"></i>';
+                } else if(type === 'error') {
+                    toastIcon.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500 text-xl"></i>';
+                } else {
+                    toastIcon.innerHTML = '<i class="fa-solid fa-circle-info text-yellow-500 text-xl"></i>';
+                }
+
+                // Animation In
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                
+                // Animation Out
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                }, 3000);
+            }
+        })();
+    </script>
 </body>
 </html>

@@ -132,3 +132,11 @@ body {
   color: #ff7200;
   text-decoration: none;
 }
+/* Resource Section */
+.resource-section {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 60px;
+}
+

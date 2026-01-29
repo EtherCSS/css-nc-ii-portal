@@ -1,269 +1,512 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Windows 10 Installation Simulator</title>
-<style>
-  body {
-    font-family: "Segoe UI", sans-serif;
-    background: #111;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-  }
-  #simulator {
-    margin: 30px auto;
-    width: 750px;
-    border: 2px solid #4cafef;
-    border-radius: 12px;
-    padding: 30px;
-    background: #1c1c1c;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(76,175,239,0.5);
-  }
-  h1 { color: #4cafef; }
-  .step { display: none; text-align: left; margin-top: 20px; }
-  .active { display: block; }
-  button {
-    margin-top: 20px;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 6px;
-    background: #4cafef;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-  button:hover { background: #2196f3; }
-  select, input[type="radio"], input[type="text"], input[type="password"], label {
-    margin-top: 10px;
-    display: block;
-    font-size: 16px;
-  }
-  .partition {
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px dashed #4cafef;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .selected { background: rgba(76, 175, 239, 0.3); }
-  #feedback { margin-top: 20px; font-weight: bold; color: #ff9800; min-height: 24px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows Setup Simulator</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0078d4; /* Windows Blue */
+      --primary-hover: #006cc1;
+      --bg-dark: #121212;
+      --surface: #1f1f1f;
+      --surface-border: #333;
+      --text: #ffffff;
+      --text-muted: #a0a0a0;
+      --radius: 8px;
+      --glass: rgba(31, 31, 31, 0.85);
+    }
+
+    * { box-sizing: border-box; outline: none; user-select: none; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: radial-gradient(circle at top right, #003366 0%, #121212 60%);
+    }
+
+    /* --- Main Window --- */
+    .setup-window {
+      width: 900px;
+      height: 600px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+      display: flex;
+      overflow: hidden;
+      animation: bootUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes bootUp {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* --- Sidebar (Progress) --- */
+    .sidebar {
+      width: 250px;
+      background: rgba(0,0,0,0.3);
+      border-right: 1px solid var(--surface-border);
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-title {
+      font-size: 18px; font-weight: 600; margin-bottom: 30px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .progress-list { list-style: none; padding: 0; margin: 0; }
+    .progress-item {
+      padding: 12px 15px;
+      color: var(--text-muted);
+      font-size: 14px;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      transition: 0.3s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .progress-item.active { background: rgba(255,255,255,0.1); color: #fff; font-weight: 600; }
+    .progress-item.done { color: var(--primary); }
+    .progress-item i { width: 20px; text-align: center; }
+
+    /* --- Content Area --- */
+    .content-area {
+      flex: 1;
+      padding: 40px 50px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-container {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: fadeIn 0.4s ease;
+    }
+    .step-container.active { display: flex; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    h2 { margin: 0 0 10px 0; font-weight: 300; font-size: 28px; }
+    p.subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 14px; }
+
+    /* --- Form Elements --- */
+    label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+    
+    select, input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--surface-border);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 20px;
+      transition: 0.2s;
+    }
+    select:focus, input:focus { border-color: var(--primary); background: rgba(0,0,0,0.2); }
+
+    /* --- Radio Cards (Install Type) --- */
+    .radio-group { display: flex; flex-direction: column; gap: 15px; }
+    .radio-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--surface-border);
+      padding: 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex; gap: 15px; align-items: center;
+    }
+    .radio-card:hover { background: rgba(255,255,255,0.07); }
+    .radio-card.selected { border-color: var(--primary); background: rgba(0, 120, 212, 0.1); }
+    .radio-icon { font-size: 24px; color: var(--primary); }
+    .radio-text h4 { margin: 0 0 5px 0; font-size: 15px; }
+    .radio-text p { margin: 0; font-size: 12px; color: var(--text-muted); }
+
+    /* --- Partition Table --- */
+    .partition-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .partition-table th { text-align: left; color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--surface-border); }
+    .partition-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .partition-row { cursor: pointer; transition: 0.2s; }
+    .partition-row:hover { background: rgba(255,255,255,0.05); }
+    .partition-row.selected { background: rgba(0, 120, 212, 0.2); }
+
+    /* --- Action Bar --- */
+    .action-bar {
+      margin-top: auto;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      padding-top: 20px;
+      border-top: 1px solid var(--surface-border);
+    }
+    
+    .status-msg {
+      margin-right: auto;
+      font-size: 13px;
+      color: #e67e22; /* Orange for alerts */
+      align-self: center;
+      font-weight: 600;
+    }
+
+    button {
+      padding: 10px 24px;
+      border-radius: 4px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; font-weight: 600; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: transparent; color: #fff; border: 1px solid var(--surface-border); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* --- Progress Bar --- */
+    .progress-track {
+      width: 100%; height: 4px; background: #333; border-radius: 2px; margin: 30px 0 10px 0; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--primary); width: 0%; transition: width 0.3s linear;
+    }
+    .install-status { font-size: 14px; color: var(--text-muted); text-align: center; }
+
+    /* --- Helper Diagram Placeholder Style --- */
+    .diagram-note {
+      font-size: 11px; color: var(--primary); 
+      margin-bottom: 15px; opacity: 0.8;
+      border-left: 2px solid var(--primary); padding-left: 10px;
+    }
+
+  </style>
 </head>
 <body>
 
-<div id="simulator">
-  <h1>Windows 10 Installation Simulator</h1>
+  <div class="setup-window">
+    
+    <div class="sidebar">
+      <div class="sidebar-title"><i class="fa-brands fa-windows"></i> Windows Setup</div>
+      <ul class="progress-list">
+        <li class="progress-item active" id="menu1"><i class="fa-solid fa-earth-americas"></i> Language</li>
+        <li class="progress-item" id="menu2"><i class="fa-solid fa-list-check"></i> Install Type</li>
+        <li class="progress-item" id="menu3"><i class="fa-solid fa-hard-drive"></i> Partitions</li>
+        <li class="progress-item" id="menu4"><i class="fa-solid fa-spinner"></i> Installing</li>
+        <li class="progress-item" id="menu5"><i class="fa-solid fa-user-gear"></i> Account</li>
+      </ul>
+    </div>
 
-  <!-- Step 1: Language & Keyboard -->
-  <div class="step active" id="step1">
-    <p><strong>Step 1:</strong> Select Language, Time, and Keyboard Layout</p>
-    <label>Language:</label>
-    <select id="language">
-      <option value="English">English</option>
-      <option value="Spanish">Spanish</option>
-      <option value="French">French</option>
-    </select>
-    <label>Time/Date Format:</label>
-    <select id="timeFormat">
-      <option value="24h">24-hour</option>
-      <option value="12h">12-hour</option>
-    </select>
-    <label>Keyboard Layout:</label>
-    <select id="keyboard">
-      <option value="US">US</option>
-      <option value="UK">UK</option>
-      <option value="FR">FR</option>
-    </select>
-    <button onclick="nextStep(1)">Next</button>
+    <div class="content-area">
+      
+      <div class="step-container active" id="step1">
+        <h2>Windows Setup</h2>
+        <p class="subtitle">Select your language and keyboard preferences.</p>
+        
+        <label>Language to install:</label>
+        <select id="language">
+          <option value="English (United States)">English (United States)</option>
+          <option value="English (United Kingdom)">English (United Kingdom)</option>
+          <option value="Filipino">Filipino</option>
+        </select>
+
+        <label>Time and currency format:</label>
+        <select id="timeFormat">
+          <option value="English (United States)">English (United States)</option>
+          <option value="English (Philippines)">English (Philippines)</option>
+        </select>
+
+        <label>Keyboard or input method:</label>
+        <select id="keyboard">
+          <option value="US">US</option>
+          <option value="UK">UK</option>
+        </select>
+
+        <div class="action-bar">
+          <button class="btn-primary" onclick="nextStep(1)">Next</button>
+        </div>
+      </div>
+
+      <div class="step-container" id="step2">
+        <h2>Installation Type</h2>
+        <p class="subtitle">Which type of installation do you want?</p>
+
+        
+
+        <div class="radio-group">
+          <div class="radio-card" onclick="selectInstallType(this, 'upgrade')">
+            <i class="radio-icon fa-solid fa-arrow-up-from-bracket"></i>
+            <div class="radio-text">
+              <h4>Upgrade: Install Windows and keep files</h4>
+              <p>Files, settings, and applications are moved to Windows.</p>
+            </div>
+          </div>
+
+          <div class="radio-card" onclick="selectInstallType(this, 'custom')">
+            <i class="radio-icon fa-solid fa-screwdriver-wrench"></i>
+            <div class="radio-text">
+              <h4>Custom: Install Windows only (advanced)</h4>
+              <p>Files, settings, and applications aren't moved.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <div class="status-msg" id="msg2"></div>
+          <button class="btn-secondary" onclick="prevStep(2)">Back</button>
+          <button class="btn-primary" onclick="nextStep(2)">Next</button>
+        </div>
+      </div>
+
+      <div class="step-container" id="step3">
+        <h2>Where do you want to install Windows?</h2>
+        <p class="subtitle">Manage drive partitions. Select a drive to continue.</p>
+
+        
+
+        <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--surface-border); border-radius: 4px; overflow: hidden;">
+          <table class="partition-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Total Size</th>
+                <th>Free Space</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="partitionList">
+              <tr class="partition-row" onclick="selectPartition(this, 'Disk 0 Partition 1')">
+                <td>Disk 0 Partition 1</td>
+                <td>100.0 MB</td>
+                <td>95.0 MB</td>
+                <td>System</td>
+              </tr>
+              <tr class="partition-row" onclick="selectPartition(this, 'Disk 0 Partition 2')">
+                <td>Disk 0 Partition 2</td>
+                <td>49.5 GB</td>
+                <td>49.5 GB</td>
+                <td>Primary</td>
+              </tr>
+              <tr class="partition-row" onclick="selectPartition(this, 'Unallocated Space')">
+                <td>Drive 0 Unallocated Space</td>
+                <td>50.0 GB</td>
+                <td>50.0 GB</td>
+                <td>-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="formatPartition()"><i class="fa-solid fa-eraser"></i> Format</button>
+          <button class="btn-secondary" style="font-size:12px; padding:6px 12px;"><i class="fa-solid fa-plus"></i> New</button>
+          <button class="btn-secondary" style="font-size:12px; padding:6px 12px;"><i class="fa-solid fa-trash"></i> Delete</button>
+        </div>
+
+        <div class="action-bar">
+          <div class="status-msg" id="msg3"></div>
+          <button class="btn-secondary" onclick="prevStep(3)">Back</button>
+          <button class="btn-primary" onclick="nextStep(3)">Next</button>
+        </div>
+      </div>
+
+      <div class="step-container" id="step4">
+        <div style="text-align: center; margin-top: 50px;">
+          <h2>Installing Windows</h2>
+          <p class="subtitle">Your PC will restart several times. This might take a while.</p>
+          
+          <div class="progress-track">
+            <div class="progress-fill" id="installBar"></div>
+          </div>
+          <div class="install-status" id="installStatus">Copying Windows files (0%)...</div>
+        </div>
+      </div>
+
+      <div class="step-container" id="step5">
+        <h2>Create an account for this PC</h2>
+        <p class="subtitle">If you want to use a password, choose something easier to remember but hard to guess.</p>
+
+        <label>Who's going to use this PC?</label>
+        <input type="text" id="username" placeholder="User name">
+
+        <label>Make it secure.</label>
+        <input type="password" id="password" placeholder="Password (Optional)">
+
+        <div class="action-bar">
+          <div class="status-msg" id="msg5"></div>
+          <button class="btn-primary" onclick="nextStep(6)">Finish</button>
+        </div>
+      </div>
+
+      <div class="step-container" id="step6">
+        <div style="text-align:center; margin-top:80px;">
+          <i class="fa-brands fa-windows" style="font-size:60px; color:var(--primary); margin-bottom:20px;"></i>
+          <h2>Welcome, <span id="finalUser">User</span>!</h2>
+          <p class="subtitle">We've got everything ready for you.</p>
+          <button class="btn-secondary" onclick="location.reload()">Run Simulator Again</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Step 2: Installation Type -->
-  <div class="step" id="step2">
-    <p><strong>Step 2:</strong> Choose Installation Type</p>
-    <input type="radio" name="installType" value="upgrade" id="upgrade">
-    <label for="upgrade">Upgrade</label>
-    <input type="radio" name="installType" value="custom" id="custom">
-    <label for="custom">Custom (Advanced)</label>
-    <button onclick="nextStep(2)">Next</button>
-  </div>
+  <script>
+    let currentInstallType = null;
+    let currentPartition = null;
 
-  <!-- Step 3: Partition Management -->
-  <div class="step" id="step3">
-    <p><strong>Step 3:</strong> Select Partition / Format</p>
-    <div class="partition" data-name="Disk 0 Partition 1" data-size="100GB">Disk 0 Partition 1 (100GB)</div>
-    <div class="partition" data-name="Disk 0 Partition 2" data-size="50GB">Disk 0 Partition 2 (50GB)</div>
-    <div class="partition" data-name="Unallocated" data-size="50GB">Unallocated Space (50GB)</div>
-    <button onclick="formatPartition()">Format Partition</button>
-    <button onclick="nextStep(3)">Install</button>
-  </div>
-
-  <!-- Step 4: Installation Progress -->
-  <div class="step" id="step4">
-    <p><strong>Step 4:</strong> Installing Windows 10...</p>
-    <div id="installProgress">Progress: 0%</div>
-  </div>
-
-  <!-- Step 5: Regional Settings -->
-  <div class="step" id="step5">
-    <p><strong>Step 5:</strong> Set up Regional Settings</p>
-    <label>Region:</label>
-    <select id="region">
-      <option>United States</option>
-      <option>Philippines</option>
-      <option>United Kingdom</option>
-    </select>
-    <label>Keyboard Layout:</label>
-    <select id="kbRegion">
-      <option>US</option>
-      <option>UK</option>
-      <option>PH</option>
-    </select>
-    <button onclick="nextStep(5)">Next</button>
-  </div>
-
-  <!-- Step 6: User Account -->
-  <div class="step" id="step6">
-    <p><strong>Step 6:</strong> Create User Account</p>
-    <label>Username:</label>
-    <input type="text" id="username" placeholder="Enter username">
-    <label>Password:</label>
-    <input type="password" id="password" placeholder="Enter password">
-    <button onclick="nextStep(6)">Finish Installation</button>
-  </div>
-
-  <!-- Step 7: Finish -->
-  <div class="step" id="step7">
-    <p><strong>Installation Complete!</strong></p>
-    <p>Welcome, <span id="userWelcome"></span>!</p>
-    <p>Your system is ready to use.</p>
-  </div>
-
-  <div id="feedback"></div>
-  <button onclick="resetSimulator()">Reset Simulator</button>
-</div>
-
-<script>
-let selectedPartition = null;
-
-// Partition selection
-document.querySelectorAll('.partition').forEach(part => {
-  part.addEventListener('click', () => {
-    document.querySelectorAll('.partition').forEach(p => p.classList.remove('selected'));
-    part.classList.add('selected');
-    selectedPartition = part.dataset.name;
-    document.getElementById('feedback').textContent = `Selected Partition: ${selectedPartition}`;
-  });
-});
-
-// Format partition
-function formatPartition(){
-  if(!selectedPartition){
-    alert("Select a partition first!");
-    return;
-  }
-  document.getElementById('feedback').textContent = `Partition "${selectedPartition}" formatted successfully!`;
-}
-
-// Navigate steps
-function nextStep(step){
-  if(step === 1){
-    const lang = document.getElementById('language').value;
-    const time = document.getElementById('timeFormat').value;
-    const kb = document.getElementById('keyboard').value;
-    document.getElementById('feedback').textContent = `Language: ${lang}, Time: ${time}, Keyboard: ${kb}`;
-    showStep(2);
-    return;
-  }
-
-  if(step === 2){
-    const installType = document.querySelector('input[name="installType"]:checked');
-    if(!installType){
-      alert("Please select an installation type.");
-      return;
+    // --- Helpers ---
+    function updateSidebar(step) {
+      // Logic to check/highlight items in sidebar
+      for(let i=1; i<=5; i++) {
+        const item = document.getElementById('menu'+i);
+        item.classList.remove('active');
+        if(i < step) {
+          item.classList.add('done');
+          item.innerHTML = item.innerHTML.replace(/(fa-regular|fa-solid) fa-[\w-]+/, 'fa-solid fa-check');
+        } else if (i === step) {
+          item.classList.add('active');
+        }
+      }
     }
-    if(installType.value === "upgrade"){
-      document.getElementById('feedback').textContent = "Upgrade selected. Installing...";
-      showStep(4);
-      simulateInstall(5);
-    } else {
-      showStep(3);
+
+    function showScreen(id) {
+      document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
-    return;
-  }
 
-  if(step === 3){
-    if(!selectedPartition){
-      alert("Select a partition before installation.");
-      return;
+    // --- Interaction ---
+    function nextStep(current) {
+      if(current === 1) {
+        updateSidebar(2);
+        showScreen('step2');
+      }
+      else if(current === 2) {
+        if(!currentInstallType) {
+          document.getElementById('msg2').innerText = "Please select an option.";
+          return;
+        }
+        if(currentInstallType === 'upgrade') {
+          // Skip partition, go to install
+          updateSidebar(4);
+          showScreen('step4');
+          startInstall();
+        } else {
+          updateSidebar(3);
+          showScreen('step3');
+        }
+      }
+      else if(current === 3) {
+        if(!currentPartition) {
+          document.getElementById('msg3').innerText = "Select a partition.";
+          return;
+        }
+        updateSidebar(4);
+        showScreen('step4');
+        startInstall();
+      }
+      else if(current === 6) { // Account finished
+        const user = document.getElementById('username').value;
+        if(!user) {
+          document.getElementById('msg5').innerText = "Username is required.";
+          return;
+        }
+        document.getElementById('finalUser').innerText = user;
+        updateSidebar(6); // Clear all
+        showScreen('step6');
+      }
     }
-    document.getElementById('feedback').textContent = `Installing on ${selectedPartition}...`;
-    showStep(4);
-    simulateInstall(5);
-    return;
-  }
 
-  if(step === 5){
-    showStep(6);
-    document.getElementById('feedback').textContent = "Regional settings saved!";
-    return;
-  }
-
-  if(step === 6){
-    const user = document.getElementById('username').value;
-    if(!user){
-      alert("Enter a username.");
-      return;
+    function prevStep(current) {
+      if(current === 2) { updateSidebar(1); showScreen('step1'); }
+      if(current === 3) { updateSidebar(2); showScreen('step2'); }
     }
-    document.getElementById('userWelcome').textContent = user;
-    showStep(7);
-    document.getElementById('feedback').textContent = "Installation Complete!";
-    return;
-  }
-}
 
-// Show specific step
-function showStep(stepNumber){
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step'+stepNumber).classList.add('active');
-}
-
-// Installation simulation
-function simulateInstall(nextStepNumber){
-  let progress = 0;
-  const progressDiv = document.getElementById('installProgress');
-  const interval = setInterval(() => {
-    progress += Math.floor(Math.random() * 10) + 5;
-    if(progress > 100) progress = 100;
-    progressDiv.textContent = `Progress: ${progress}%`;
-    if(progress === 100){
-      clearInterval(interval);
-      document.getElementById('feedback').textContent = "✅ Installation step completed!";
-      showStep(nextStepNumber);
+    // --- Logic Specifics ---
+    function selectInstallType(el, type) {
+      document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      currentInstallType = type;
+      document.getElementById('msg2').innerText = "";
     }
-  }, 500);
-}
 
-// Reset simulator
-function resetSimulator(){
-  selectedPartition = null;
-  document.querySelectorAll('.partition').forEach(p => p.classList.remove('selected'));
-  document.getElementById('language').value = "English";
-  document.getElementById('timeFormat').value = "24h";
-  document.getElementById('keyboard').value = "US";
-  document.querySelectorAll('input[name="installType"]').forEach(r => r.checked = false);
-  document.getElementById('username').value = "";
-  document.getElementById('password').value = "";
-  document.getElementById('feedback').textContent = "";
-  document.getElementById('installProgress').textContent = "Progress: 0%";
-  showStep(1);
-}
-</script>
+    function selectPartition(el, name) {
+      document.querySelectorAll('.partition-row').forEach(r => r.classList.remove('selected'));
+      el.classList.add('selected');
+      currentPartition = name;
+      document.getElementById('msg3').innerText = "";
+    }
 
+    function formatPartition() {
+      if(!currentPartition) {
+        document.getElementById('msg3').innerText = "Select a partition first.";
+        return;
+      }
+      // Simple visual feedback
+      const rows = document.querySelectorAll('.partition-row');
+      rows.forEach(r => {
+        if(r.classList.contains('selected')) {
+          // Simulate format by changing free space text
+          const cells = r.getElementsByTagName('td');
+          cells[2].innerText = cells[1].innerText; // Free space = Total space
+          document.getElementById('msg3').innerText = "Partition formatted.";
+          document.getElementById('msg3').style.color = "#2ecc71";
+        }
+      });
+    }
+
+    function startInstall() {
+      let progress = 0;
+      const bar = document.getElementById('installBar');
+      const status = document.getElementById('installStatus');
+      const phases = [
+        "Copying Windows files",
+        "Getting files ready for installation",
+        "Installing features",
+        "Installing updates",
+        "Finishing up"
+      ];
+
+      const interval = setInterval(() => {
+        progress += Math.random() * 2;
+        if(progress > 100) progress = 100;
+        
+        bar.style.width = progress + '%';
+
+        // Update text based on %
+        let phaseIndex = 0;
+        if(progress > 10) phaseIndex = 1;
+        if(progress > 70) phaseIndex = 2;
+        if(progress > 85) phaseIndex = 3;
+        if(progress > 95) phaseIndex = 4;
+
+        status.innerText = `${phases[phaseIndex]} (${Math.floor(progress)}%)`;
+
+        if(progress === 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            updateSidebar(5);
+            showScreen('step5');
+          }, 1000);
+        }
+      }, 100);
+    }
+
+  </script>
 </body>
 </html>

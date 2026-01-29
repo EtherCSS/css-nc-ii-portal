@@ -3,122 +3,276 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Lab - CSS NC II</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Virtual Lab | CSS NC II</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <style>
+    :root {
+      --primary: #ff9f1a;
+      --primary-glow: rgba(255, 159, 26, 0.4);
+      --bg-dark: #09090b;
+      --surface: #18181b;
+      --surface-hover: #27272a;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0a0a0a;
-      color: #fff;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
       display: flex;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      background-image: radial-gradient(circle at 0% 0%, rgba(255, 159, 26, 0.05) 0%, transparent 50%);
     }
 
-    
-    header {
-      text-align: center;
-      padding: 10px;
-      background: #111;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    /* --- Sidebar Navigation --- */
+    .sidebar {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      z-index: 10;
+      transition: width 0.3s ease;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-      color: #ff9f1a;
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 30px; padding-left: 10px;
+    }
+    .brand i { color: var(--primary); font-size: 20px; }
+    .brand h2 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+
+    .nav-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-muted); margin-bottom: 10px; padding-left: 10px; font-weight: 700;
     }
 
-    /* Dropdown */
-    .lab-dropdown {
-      display: inline-block;
-      position: relative;
-      margin-top: 8px;
+    .nav-links {
+      display: flex; flex-direction: column; gap: 5px;
+      flex: 1; overflow-y: auto;
     }
 
-    .lab-btn {
-      background: #1a1a1a;
-      color: #fff;
-      padding: 10px 16px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      border-radius: 6px;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    .lab-btn:hover {
-      background: #ff9f1a;
-      color: #0a0a0a;
-    }
-
-    /* Dropdown items */
-    .lab-content {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background: #1a1a1a;
-      min-width: 200px;
-      border-radius: 6px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-      z-index: 1000;
-    }
-    .lab-content a {
-      display: block;
-      padding: 8px 14px;
-      font-size: 14px;
-      color: #fff;
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
       text-decoration: none;
-    }
-    .lab-content a:hover {
-      background: #ff9f1a;
-      color: #0a0a0a;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
     }
 
-    /* Show on hover */
-    .lab-dropdown:hover .lab-content {
+    .nav-btn:hover {
+      background: var(--surface-hover);
+      color: #fff;
+    }
+
+    .nav-btn.active {
+      background: rgba(255, 159, 26, 0.1);
+      color: var(--primary);
+      border-color: rgba(255, 159, 26, 0.2);
+    }
+    
+    .nav-btn i { width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 20px; margin-top: 20px;
+    }
+
+    /* --- Main Workspace --- */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .top-bar {
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 25px;
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .current-module {
+      font-weight: 600; display: flex; align-items: center; gap: 8px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; background: var(--primary);
+      border-radius: 50%; box-shadow: 0 0 10px var(--primary);
+    }
+
+    /* --- Simulator Frame --- */
+    .frame-container {
+      flex: 1;
+      background: #000;
+      position: relative;
+      margin: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    iframe {
+      width: 100%; height: 100%;
+      border: none;
       display: block;
     }
 
-    /* Simulator box (iframe) */
-    iframe {
-      flex: 1;
-      width: 100%;
-      border: none;
-      border-top: 2px solid #222;
-      background: #111;
+    /* Loading State */
+    .loader {
+      position: absolute; inset: 0;
+      background: #09090b;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 5;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .loader.active { opacity: 1; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255, 159, 26, 0.3);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .sidebar { width: 70px; padding: 15px 10px; }
+      .brand h2, .nav-label, .nav-btn span, .sidebar-footer span { display: none; }
+      .nav-btn { justify-content: center; padding: 12px; }
+      .frame-container { margin: 10px; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Virtual Lab</h1>
-    <div class="lab-dropdown">
-      <button class="lab-btn">Select Module ▾</button>
-      <div class="lab-content">
-        <a href="atx.html" target="labFrame">ATX</a>
-        <a href="bios.html" target="labFrame">BIOS</a>
-        <a href="cable.html" target="labFrame">Cables</a>
-        <a href="diskpart.html" target="labFrame">Diskpart</a>
-        <a href="network.html" target="labFrame">Network</a>
-        <a href="os.html" target="labFrame">Operating System</a>
-        <a href="ping.html" target="labFrame">Ping</a>
-        <a href="ip address.html" target="labFrame">Ip Address</a>
-      </div>
+  <nav class="sidebar">
+    <div class="brand">
+      <i class="fa-solid fa-flask"></i>
+      <h2>Virtual Lab</h2>
     </div>
-  </header>
 
-  <!-- Full window iframe -->
-  <iframe src="atx.html" name="labFrame"></iframe>
+    <div class="nav-label">Hardware & OS</div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="loadLab('atx.html', 'ATX Power Supply', this)">
+        <i class="fa-solid fa-plug"></i> <span>ATX</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('bios.html', 'BIOS Configuration', this)">
+        <i class="fa-solid fa-microchip"></i> <span>BIOS</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('os.html', 'Operating System', this)">
+        <i class="fa-brands fa-windows"></i> <span>OS Install</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('diskpart.html', 'Disk Partitioning', this)">
+        <i class="fa-solid fa-hard-drive"></i> <span>Diskpart</span>
+      </button>
+
+      <div class="nav-label" style="margin-top:20px;">Networking</div>
+      
+      <button class="nav-btn" onclick="loadLab('cable.html', 'Cabling & Crimping', this)">
+        <i class="fa-solid fa-ethernet"></i> <span>Cables</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('network.html', 'Network Config', this)">
+        <i class="fa-solid fa-network-wired"></i> <span>Network</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('ipv4.html', 'IPv4 Addressing', this)">
+        <i class="fa-solid fa-globe"></i> <span>IP Address</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('ping.html', 'Ping Utility', this)">
+        <i class="fa-solid fa-terminal"></i> <span>Ping</span>
+      </button>
+      <button class="nav-btn" onclick="loadLab('ip.html', 'Ping Utility', this)">
+        <i class="fa-solid fa-terminal"></i> <span>IP checker</span>
+        <button class="nav-btn" onclick="loadLab('IPV4.html', 'Ping Utility', this)">
+        <i class="fa-solid fa-terminal"></i> <span>IPV4 Simulator</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="dashboard.html" class="nav-btn">
+        <i class="fa-solid fa-arrow-left"></i> <span>Back to Dashboard</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="workspace">
+    <div class="top-bar">
+      <div class="current-module">
+        <div class="status-dot"></div>
+        <span id="labTitle">ATX Power Supply</span>
+      </div>
+      <button class="nav-btn" onclick="toggleFullscreen()" style="padding:8px;">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+
+    <div class="frame-container">
+      <div class="loader" id="labLoader"><div class="spinner"></div></div>
+      <iframe src="atx.html" id="labFrame" onload="hideLoader()"></iframe>
+    </div>
+  </main>
+
+  <script>
+    const iframe = document.getElementById('labFrame');
+    const titleEl = document.getElementById('labTitle');
+    const loader = document.getElementById('labLoader');
+
+    function loadLab(url, title, btn) {
+      // 1. Update Active State
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 2. Show Loader
+      loader.classList.add('active');
+
+      // 3. Update Title & Source
+      titleEl.textContent = title;
+      iframe.src = url;
+    }
+
+    function hideLoader() {
+      // Hide loader once iframe content is ready
+      setTimeout(() => {
+        loader.classList.remove('active');
+      }, 500); // Small delay for smoothness
+    }
+
+    function toggleFullscreen() {
+      const elem = document.querySelector('.frame-container');
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  </script>
 
 </body>
 </html>
-
-
-
-
-

@@ -3,214 +3,440 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Network Connection Simulator</title>
+  <title>Network Topology Simulator</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 0;
+    :root {
+      --primary: #4cafef; /* Straight Cable Blue */
+      --secondary: #ff9800; /* Crossover Orange */
+      --bg-dark: #09090b;
+      --surface: #18181b;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 12px;
     }
+
+    * { box-sizing: border-box; user-select: none; }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background-image: radial-gradient(circle at 50% 0%, rgba(76, 175, 239, 0.05) 0%, transparent 50%);
+    }
+
+    /* --- Header --- */
     header {
       padding: 20px;
-      background: #111;
-      border-bottom: 2px solid #4cafef;
-    }
-    h1 { color: #4cafef; margin: 0; font-size: 2.2em; }
-    p { color: #ccc; }
-    .workspace {
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
       display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin: 20px auto;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
     }
-    .device {
-      width: 120px;
-      height: 120px;
-      background: #1c1c1c;
-      border: 2px solid #4cafef;
+    
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand h1 { margin: 0; font-size: 20px; color: var(--primary); font-weight: 800; letter-spacing: -0.5px; }
+    .brand i { font-size: 20px; color: #fff; }
+
+    /* --- Main Layout --- */
+    .container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* --- Sidebar (Device Palette) --- */
+    .palette {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 5;
+    }
+    .palette h3 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; color: #71717a; letter-spacing: 1px; }
+
+    .device-tool {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 8px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.2s;
+    }
+    .device-tool:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); border-color: var(--primary); }
+    .device-tool:active { cursor: grabbing; transform: scale(0.95); }
+    
+    .tool-icon { 
+      width: 40px; height: 40px; 
+      background: rgba(0,0,0,0.3); 
+      border-radius: 6px; 
+      display: grid; place-items: center; 
+      font-size: 18px; color: var(--primary);
+    }
+
+    /* --- Canvas Area --- */
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      background-color: #0c0c0e;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      overflow: hidden;
+    }
+
+    #dropZone {
+      width: 100%; height: 100%;
+      position: relative;
+    }
+
+    .node {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: rgba(20, 20, 20, 0.9);
+      border: 2px solid var(--border);
       border-radius: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: grab;
-      user-select: none;
-      font-size: 18px;
-      font-weight: bold;
-      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: box-shadow 0.2s, border-color 0.2s;
+      z-index: 2;
     }
-    .device span { font-size: 42px; margin-bottom: 6px; }
-    .device:hover { background: #2a2a2a; transform: scale(1.05); }
-    .device.dragging { opacity: 0.5; }
+    .node:hover { border-color: var(--text); z-index: 3; }
+    .node:active { cursor: grabbing; }
+    .node.selected { border-color: var(--primary); box-shadow: 0 0 20px rgba(76, 175, 239, 0.3); }
 
-    #canvas {
-      margin-top: 15px;
-      border: 2px dashed #4cafef;
-      width: 80%;
-      height: 300px; /* smaller canvas */
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-      background: #111;
-      border-radius: 12px;
-    }
+    .node i { font-size: 32px; margin-bottom: 8px; color: #ccc; }
+    .node span { font-size: 12px; font-weight: 600; color: #fff; background: #000; padding: 2px 6px; border-radius: 4px; }
 
+    /* Cable Line */
     .cable {
       position: absolute;
       height: 4px;
-      transform-origin: 0 0;
+      transform-origin: 0 50%;
       border-radius: 4px;
+      z-index: 1;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      pointer-events: none;
+      opacity: 0;
+      animation: drawLine 0.5s forwards;
+    }
+    @keyframes drawLine { from { width: 0; opacity: 0; } to { opacity: 1; } }
+
+    /* --- Controls Bar --- */
+    .controls {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 24, 27, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 15px 25px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      gap: 15px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      z-index: 10;
     }
 
-    .controls { margin: 15px; }
-    button {
-      margin: 6px;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #4cafef;
-      color: #fff;
-      font-size: 15px;
-      font-weight: bold;
-      transition: 0.2s;
+    .action-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      background: transparent; border: none; color: var(--text);
+      cursor: pointer; padding: 10px; border-radius: 8px;
+      transition: 0.2s; min-width: 80px;
     }
-    button:hover { background: #2196f3; }
-    button.reset { background: #e53935; }
-    button.reset:hover { background: #c62828; }
+    .action-btn:hover { background: rgba(255,255,255,0.05); }
+    
+    .btn-straight i { color: var(--primary); font-size: 20px; }
+    .btn-crossover i { color: var(--secondary); font-size: 20px; }
+    .btn-reset i { color: var(--error); font-size: 20px; }
+    
+    .btn-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    #result {
-      margin: 15px auto;
-      padding: 12px 20px;
-      width: fit-content;
-      max-width: 80%;
+    /* --- Notification --- */
+    #notification {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 12px 24px;
       border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      display: none; /* hidden until needed */
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.3s;
+      z-index: 20;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
+    #notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast-success { background: rgba(16, 185, 129, 0.9); color: #fff; border: 1px solid var(--success); }
+    .toast-error { background: rgba(239, 68, 68, 0.9); color: #fff; border: 1px solid var(--error); }
+    .toast-warn { background: rgba(255, 152, 0, 0.9); color: #fff; border: 1px solid var(--secondary); }
+
   </style>
 </head>
 <body>
+
   <header>
-    <h1>💻 Network Connection Simulator</h1>
-    <p>Drag devices into the workspace and test your cable connections</p>
+    <div class="brand">
+      <i class="fa-solid fa-diagram-project"></i>
+      <h1>Network Simulator</h1>
+    </div>
+    <div style="font-size:12px; color:#a1a1aa; display:flex; gap:20px;">
+      <span><i class="fa-solid fa-circle" style="color:var(--primary); font-size:8px;"></i> Straight-Through</span>
+      <span><i class="fa-solid fa-circle" style="color:var(--secondary); font-size:8px;"></i> Crossover</span>
+    </div>
   </header>
 
-  <div class="workspace">
-    <div class="device" draggable="true" data-type="PC"><span>💻</span>PC</div>
-    <div class="device" draggable="true" data-type="Switch"><span>🔀</span>Switch</div>
-    <div class="device" draggable="true" data-type="Router"><span>📡</span>Router</div>
-    <div class="device" draggable="true" data-type="Server"><span>🖥️</span>Server</div>
+  <div class="container">
+    
+    <aside class="palette">
+      <h3>End Devices</h3>
+      <div class="device-tool" draggable="true" data-type="PC" data-icon="fa-laptop">
+        <div class="tool-icon"><i class="fa-solid fa-laptop"></i></div>
+        <span>PC / Laptop</span>
+      </div>
+      <div class="device-tool" draggable="true" data-type="Server" data-icon="fa-server">
+        <div class="tool-icon"><i class="fa-solid fa-server"></i></div>
+        <span>Server</span>
+      </div>
+      
+      <h3>Network Devices</h3>
+      <div class="device-tool" draggable="true" data-type="Switch" data-icon="fa-network-wired">
+        <div class="tool-icon"><i class="fa-solid fa-network-wired"></i></div>
+        <span>Switch</span>
+      </div>
+      <div class="device-tool" draggable="true" data-type="Router" data-icon="fa-router">
+        <div class="tool-icon"><i class="fa-solid fa-router"></i></div>
+        <span>Router</span>
+      </div>
+    </aside>
+
+    <main class="canvas-wrapper">
+      <div id="dropZone"></div>
+      
+      <div class="controls">
+        <button class="action-btn btn-straight" onclick="connectDevices('straight')">
+          <i class="fa-solid fa-minus"></i>
+          <span class="btn-label">Straight</span>
+        </button>
+        <button class="action-btn btn-crossover" onclick="connectDevices('crossover')">
+          <i class="fa-solid fa-xmark"></i>
+          <span class="btn-label">Crossover</span>
+        </button>
+        <div style="width:1px; background:var(--border); height:30px;"></div>
+        <button class="action-btn btn-reset" onclick="resetCanvas()">
+          <i class="fa-solid fa-trash-can"></i>
+          <span class="btn-label">Reset</span>
+        </button>
+      </div>
+
+      <div id="notification"></div>
+    </main>
   </div>
-
-  <div id="canvas"></div>
-
-  <div class="controls">
-    <button onclick="connectDevices('straight')">🔵 Straight-through</button>
-    <button onclick="connectDevices('crossover')">🟠 Crossover</button>
-    <button class="reset" onclick="resetCanvas()">♻ Reset</button>
-  </div>
-
-  <div id="result"></div>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    let dragged = null;
-    let devicesOnCanvas = [];
-    let lastConnection = null;
+    const dropZone = document.getElementById('dropZone');
+    const notification = document.getElementById('notification');
+    let devices = [];
+    let draggedData = null;
+    let selectedNode = null; // Currently not used for multi-select, simplified logic: connects last 2 added
 
-    document.querySelectorAll('.device').forEach(device => {
-      device.addEventListener('dragstart', e => {
-        dragged = device.cloneNode(true);
+    // --- Drag & Drop ---
+    document.querySelectorAll('.device-tool').forEach(tool => {
+      tool.addEventListener('dragstart', (e) => {
+        draggedData = {
+          type: tool.dataset.type,
+          icon: tool.dataset.icon
+        };
       });
     });
 
-    canvas.addEventListener('dragover', e => e.preventDefault());
+    dropZone.addEventListener('dragover', (e) => e.preventDefault());
 
-    canvas.addEventListener('drop', e => {
-      if (dragged) {
-        dragged.style.position = 'absolute';
-        dragged.style.left = e.offsetX - 60 + 'px';
-        dragged.style.top = e.offsetY - 60 + 'px';
-        dragged.setAttribute('draggable', false);
-        canvas.appendChild(dragged);
-        devicesOnCanvas.push(dragged);
-        dragged = null;
-      }
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (!draggedData) return;
+
+      const rect = dropZone.getBoundingClientRect();
+      const x = e.clientX - rect.left - 50; // Center offset
+      const y = e.clientY - rect.top - 50;
+
+      createNode(x, y, draggedData.type, draggedData.icon);
+      draggedData = null;
     });
 
-    function connectDevices(type) {
-      if (devicesOnCanvas.length < 2) {
-        showResult('⚠ Add at least 2 devices to connect!', '#ff9800');
+    function createNode(x, y, type, iconClass) {
+      const node = document.createElement('div');
+      node.className = 'node';
+      node.style.left = `${x}px`;
+      node.style.top = `${y}px`;
+      node.innerHTML = `
+        <i class="fa-solid ${iconClass}"></i>
+        <span>${type}</span>
+      `;
+      
+      // Make node draggable on canvas (simple implementation)
+      let isDragging = false;
+      let offset = {x:0, y:0};
+
+      node.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offset.x = e.offsetX;
+        offset.y = e.offsetY;
+        // Visual selection
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+        node.classList.add('selected');
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if(!isDragging) return;
+        const rect = dropZone.getBoundingClientRect();
+        node.style.left = `${e.clientX - rect.left - offset.x}px`;
+        node.style.top = `${e.clientY - rect.top - offset.y}px`;
+      });
+
+      window.addEventListener('mouseup', () => { isDragging = false; });
+
+      dropZone.appendChild(node);
+      devices.push({ el: node, type: type });
+      
+      // Highlight connect logic guidance
+      if(devices.length === 1) showToast("Drag one more device to connect.", "warn");
+      if(devices.length === 2) showToast("Select a cable type below to connect.", "warn");
+    }
+
+    // --- Logic ---
+    function connectDevices(cableType) {
+      if (devices.length < 2) {
+        showToast("Add at least 2 devices to the canvas.", "error");
         return;
       }
-      const d1 = devicesOnCanvas[0];
-      const d2 = devicesOnCanvas[1];
-      const r1 = d1.getBoundingClientRect();
-      const r2 = d2.getBoundingClientRect();
-      const c = canvas.getBoundingClientRect();
 
-      const x1 = r1.left + r1.width / 2 - c.left;
-      const y1 = r1.top + r1.height / 2 - c.top;
-      const x2 = r2.left + r2.width / 2 - c.left;
-      const y2 = r2.top + r2.height / 2 - c.top;
+      // Get last two devices for simple connection logic
+      const d1 = devices[devices.length - 2];
+      const d2 = devices[devices.length - 1];
+
+      // Remove old cable between these two if exists (visual cleanup simplified)
+      // Just draw new one
+      drawCable(d1.el, d2.el, cableType);
+
+      // Validate
+      const t1 = d1.type;
+      const t2 = d2.type;
+      
+      // Logic: Same device = Crossover, Different = Straight
+      // Exception: PC to Router is Crossover (as router behaves like PC)
+      
+      let required = 'straight';
+      
+      const likeDevices = ['PC', 'Router', 'Server']; // These behave similarly
+      // PC-PC, PC-Router, Router-Router = Crossover
+      // Switch-Switch = Crossover
+      // PC-Switch, Router-Switch = Straight
+
+      const isGroup1 = likeDevices.includes(t1);
+      const isGroup2 = likeDevices.includes(t2);
+
+      if (t1 === t2) {
+        required = 'crossover';
+      } else if (isGroup1 && isGroup2) {
+        required = 'crossover'; // e.g. PC to Router
+      } else {
+        required = 'straight';
+      }
+
+      if (cableType === required) {
+        showToast(`Correct! ${t1} ↔ ${t2} uses ${cableType.toUpperCase()}.`, "success");
+      } else {
+        showToast(`Incorrect. ${t1} ↔ ${t2} needs ${required.toUpperCase()}.`, "error");
+      }
+    }
+
+    function drawCable(node1, node2, type) {
+      const rect1 = node1.getBoundingClientRect();
+      const rect2 = node2.getBoundingClientRect();
+      const container = dropZone.getBoundingClientRect();
+
+      // Centers relative to container
+      const x1 = rect1.left + rect1.width / 2 - container.left;
+      const y1 = rect1.top + rect1.height / 2 - container.top;
+      const x2 = rect2.left + rect2.width / 2 - container.left;
+      const y2 = rect2.top + rect2.height / 2 - container.top;
 
       const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
       const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
 
       const cable = document.createElement('div');
       cable.className = 'cable';
-      cable.style.width = length + 'px';
-      cable.style.left = x1 + 'px';
-      cable.style.top = y1 + 'px';
+      cable.style.width = `${length}px`;
+      cable.style.left = `${x1}px`;
+      cable.style.top = `${y1}px`;
       cable.style.transform = `rotate(${angle}deg)`;
-      cable.style.background = (type === 'straight') ? '#4cafef' : '#ff9800';
+      cable.style.background = type === 'straight' ? 'var(--primary)' : 'var(--secondary)'; // Blue vs Orange dashed
 
-      canvas.appendChild(cable);
-
-      lastConnection = { d1, d2, type };
-      checkConnection();
-    }
-
-    function checkConnection() {
-      if (!lastConnection) return;
-      const { d1, d2, type } = lastConnection;
-      const t1 = d1.dataset.type;
-      const t2 = d2.dataset.type;
-
-      let correctType;
-      if (t1 === t2) {
-        correctType = 'crossover';
-      } else {
-        correctType = 'straight';
+      // Make Crossover Dashed for visual distinction
+      if(type === 'crossover') {
+        cable.style.background = `repeating-linear-gradient(90deg, var(--secondary), var(--secondary) 10px, transparent 10px, transparent 20px)`;
       }
 
-      if (type === correctType) {
-        showResult(`✅ Correct! ${t1} ↔ ${t2} should use ${correctType.toUpperCase()} cable.`, '#4caf50');
-      } else {
-        showResult(`❌ Incorrect. ${t1} ↔ ${t2} should use ${correctType.toUpperCase()} cable.`, '#ff5252');
-      }
+      dropZone.appendChild(cable);
     }
 
-    function showResult(message, color) {
-      const result = document.getElementById('result');
-      result.style.display = 'block';
-      result.style.background = color;
-      result.textContent = message;
+    function showToast(msg, type) {
+      notification.textContent = ""; // clear text
+      // Icon
+      const icon = document.createElement('i');
+      icon.className = type === 'success' ? "fa-solid fa-check" : (type === 'error' ? "fa-solid fa-xmark" : "fa-solid fa-info-circle");
+      notification.appendChild(icon);
+      
+      const text = document.createElement('span');
+      text.textContent = msg;
+      notification.appendChild(text);
+
+      notification.className = type === 'success' ? 'toast-success' : (type === 'error' ? 'toast-error' : 'toast-warn');
+      notification.classList.add('show');
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
     }
 
     function resetCanvas() {
-      canvas.innerHTML = '';
-      devicesOnCanvas = [];
-      lastConnection = null;
-      const result = document.getElementById('result');
-      result.style.display = 'none';
+      dropZone.innerHTML = '';
+      devices = [];
+      showToast("Canvas cleared.", "warn");
     }
+
   </script>
 </body>
 </html>
