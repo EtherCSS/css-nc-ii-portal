@@ -2,224 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rib AI</title>
+<title>RIB AI V2.1 (Stable)</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root {
-  --red: #ff2b2b;
-  --dark: #020202;
-}
+  :root {
+    --primary: #00f3ff;
+    --active: #ff2b2b;
+    --bg: #050505;
+  }
 
-body {
-  margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at center, #050505, #000);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: Orbitron, Arial;
-  color: var(--red);
-  overflow: hidden;
-}
+  body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at center, #111, #000);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--primary);
+    overflow: hidden;
+  }
 
-body::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(255,0,0,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,0,0,0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: -1;
+  }
 
-#hud {
-  position: relative;
-  width: 320px;
-  height: 320px;
-}
+  /* HUD */
+  #hud-container {
+    position: relative;
+    width: 350px;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.ring.outer {
-  position: absolute;
-  inset: 0;
-  border: 3px solid var(--red);
-  border-radius: 50%;
-  animation: spin 20s linear infinite;
-}
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    transition: all 0.5s ease;
+  }
 
-.ring.middle {
-  position: absolute;
-  inset: 30px;
-  border: 2px dashed var(--red);
-  border-radius: 50%;
-  animation: spinReverse 14s linear infinite;
-}
+  .ring.outer {
+    inset: 0;
+    border: 2px solid var(--primary);
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    animation: spin 10s linear infinite;
+    box-shadow: 0 0 15px var(--primary);
+  }
 
-#core {
-  position: absolute;
-  inset: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--red) 20%, transparent 70%);
-  box-shadow: 0 0 30px var(--red);
-  transition: 0.2s;
-}
+  .ring.inner {
+    inset: 40px;
+    border: 4px dashed var(--primary);
+    opacity: 0.5;
+    animation: spinReverse 15s linear infinite;
+  }
 
-.speaking #core {
-  transform: scale(1.2);
-  box-shadow: 0 0 60px var(--red);
-}
+  #core {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 40px var(--primary);
+    opacity: 0.8;
+    transition: 0.3s;
+    animation: pulse 2s infinite ease-in-out;
+  }
 
-#label {
-  position: absolute;
-  width: 100%;
-  bottom: -50px;
-  text-align: center;
-  font-size: 14px;
-  letter-spacing: 2px;
-}
+  /* Status Text */
+  #status-box { margin-top: 40px; text-align: center; height: 60px; }
+  h1 { margin: 0; font-size: 24px; letter-spacing: 4px; text-shadow: 0 0 10px var(--primary); }
+  
+  #console-log {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px; color: #fff; opacity: 0.7; margin-top: 10px; min-height: 20px;
+  }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
+  /* Active State (Red) */
+  body.processing { --primary: #ff2b2b; }
+  body.processing .ring.outer { animation-duration: 2s; border-color: var(--active); box-shadow: 0 0 30px var(--active); }
+  body.processing #core { background: radial-gradient(circle, var(--active) 0%, transparent 70%); box-shadow: 0 0 80px var(--active); transform: scale(1.1); }
+  body.processing h1 { text-shadow: 0 0 20px var(--active); color: var(--active); }
 
-@keyframes spinReverse {
-  from { transform: rotate(360deg); }
-  to   { transform: rotate(0deg); }
-}
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  @keyframes spinReverse { 100% { transform: rotate(-360deg); } }
+  @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(0.95); opacity: 0.4; } }
+
+  /* Visualizer */
+  .bars { position: absolute; bottom: -80px; display: flex; gap: 5px; height: 40px; align-items: flex-end; }
+  .bar { width: 6px; background: var(--primary); height: 5px; transition: 0.1s; }
 </style>
 </head>
 <body>
 
-<div id="hud">
+<div id="hud-container">
   <div class="ring outer"></div>
-  <div class="ring middle"></div>
+  <div class="ring inner"></div>
   <div id="core"></div>
-  <div id="label">RIB AI ONLINE</div>
+</div>
+
+<div id="status-box">
+  <h1 id="main-status">SYSTEM ONLINE</h1>
+  <div id="console-log">> Waiting for command...</div>
+</div>
+
+<div class="bars">
+  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
 </div>
 
 <script>
-const hud = document.getElementById("hud");
-const label = document.getElementById("label");
+  const statusTitle = document.getElementById("main-status");
+  const consoleLog = document.getElementById("console-log");
+  const body = document.body;
 
-function speak(text) {
-  hud.classList.add("speaking");
-  label.textContent = "PROCESSING";
+  // --- VARIABLES TO PREVENT REPETITION ---
+  let isProcessing = false; // Locks the system while speaking/acting
+  let lastCommandTime = 0;  // Timestamp of last command
 
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.onend = () => {
-    hud.classList.remove("speaking");
-    label.textContent = "AI ONLINE";
-  };
-  speechSynthesis.speak(u);
-}
-
-/* ====== LOCAL PPT CONTROL ====== */
-async function controlLocalPPT(command) {
-  try {
-    const response = await fetch("http://localhost:5000/ppt", { // adjust to your Flask server
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command })
+  // Visualizer Animation
+  setInterval(() => {
+    document.querySelectorAll('.bar').forEach(bar => {
+      const max = body.classList.contains('processing') ? 40 : 10;
+      bar.style.height = Math.floor(Math.random() * max + 5) + 'px';
     });
-    const data = await response.json();
-    console.log("PPT Response:", data);
+  }, 100);
 
-    if(data.status === "error") {
-      speak("PowerPoint error: " + data.action);
+  function typeText(text) {
+    consoleLog.innerText = "> ";
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        consoleLog.innerHTML += text.charAt(i);
+        i++;
+        setTimeout(type, 20);
+      }
     }
-  } catch (err) {
-    console.error("Cannot reach local PPT server:", err);
-    speak("Cannot control local PowerPoint. Make sure Python server is running.");
-  }
-}
-
-/* ====== SPEECH RECOGNITION ====== */
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recog = new SR();
-recog.lang = "en-US";
-recog.continuous = true;
-
-let lastTab = null;
-
-function handleCommand(text) {
-  text = text.toLowerCase();
-  label.textContent = text.toUpperCase();
-
-  // ----- OPEN WEBSITES (instant) -----
-  if(text.includes("open google")) { 
-    window.open("https://google.com","_blank"); 
-    speak("Opening Google"); 
-    return; 
-  }
-  if(text.includes("open youtube")) { 
-    window.open("https://youtube.com","_blank"); 
-    speak("Opening YouTube"); 
-    return; 
-  }
-  if(text.includes("open facebook")) { 
-    window.open("https://facebook.com","_blank"); 
-    speak("Opening Facebook"); 
-    return; 
+    type();
   }
 
-  // ----- GOOGLE SEARCH (instant) -----
-  if(
-    text.startsWith("search for ") || text.startsWith("search ") || text.startsWith("google ") ||
-    text.startsWith("what is ") || text.startsWith("what are ") || text.startsWith("find ") ||
-    text.startsWith("look up ") || text.startsWith("tell me about ")
-  ){
-    let query = text.replace(/search for |search |google |what is |what are |find |look up |tell me about /, "").trim();
-    if(query.length > 0) {
-      window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
-      speak(`Searching Google for ${query}`);
-    } else speak("Please say the topic you want to search.");
-    return;
+  function speak(text) {
+    if (isProcessing) return; // Don't speak if already speaking
+    isProcessing = true;
+
+    // Visuals
+    body.classList.add("processing");
+    statusTitle.innerText = "PROCESSING";
+    typeText(text.toUpperCase());
+
+    // Audio
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.pitch = 0.9;
+    u.rate = 1.1;
+    
+    u.onend = () => {
+      // Cooldown finished
+      setTimeout(() => {
+        body.classList.remove("processing");
+        statusTitle.innerText = "LISTENING";
+        isProcessing = false;
+      }, 1000); // Wait 1 second after speaking before listening again
+    };
+    
+    window.speechSynthesis.speak(u);
   }
 
-  // ----- LOCAL PPT COMMANDS -----
-  if(text.includes("open presentation") || text.includes("start presentation") || text.includes("open innov") || text.includes("open powerpoint")) {
-    speak("Opening local presentation");
-    controlLocalPPT("open presentation");
-    return;
+  function processCommand(rawText) {
+    const now = Date.now();
+    const text = rawText.toLowerCase().trim();
+
+    // 1. IGNORE if already processing or spamming
+    if (isProcessing) return;
+    if (now - lastCommandTime < 3000) return; // 3 Second Cool-down
+    if (text.length < 3) return; // Ignore short noise
+
+    // 2. SEARCH LOGIC (Only runs ONCE)
+    if(text.startsWith("search") || text.startsWith("google") || text.startsWith("find")) {
+      const query = text.replace(/search for|search|google|find/, "").trim();
+      
+      if(query.length > 1) {
+        lastCommandTime = now; // Lock command
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+        speak(`Searching web for ${query}`);
+        return;
+      }
+    }
+
+    // 3. OTHER COMMANDS
+    if(text.includes("hello") || text.includes("hi")) {
+      lastCommandTime = now;
+      speak("Systems Online. Ready for input.");
+      return;
+    }
+
+    if(text.includes("time")) {
+      lastCommandTime = now;
+      speak("It is " + new Date().toLocaleTimeString());
+      return;
+    }
+
+    if(text.includes("open youtube")) {
+      lastCommandTime = now;
+      window.open("https://youtube.com", "_blank");
+      speak("Opening YouTube");
+      return;
+    }
+
+    console.log("Ignored input:", text);
   }
 
-  if(text.includes("next slide") || text === "next" || text.includes("forward")) {
-    speak("Next slide");
-    controlLocalPPT("next");
-    return;
+  /* --- SPEECH RECOGNITION SETUP --- */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if(SR) {
+    const recog = new SR();
+    recog.lang = "en-US";
+    recog.continuous = true;
+    recog.interimResults = false; // IMPORTANT: Prevents double triggering
+
+    recog.onresult = (e) => {
+      const transcript = e.results[e.results.length - 1][0].transcript;
+      processCommand(transcript);
+    };
+
+    recog.onend = () => {
+      // Auto-restart
+      if(!isProcessing) recog.start();
+    };
+
+    recog.start();
+    setTimeout(() => speak("Rib AI Connected"), 1000);
+
+  } else {
+    statusTitle.innerText = "NO MIC SUPPORT";
+    typeText("Use Chrome Browser");
   }
-
-  if(text.includes("previous slide") || text.includes("back") || text.includes("go back")) {
-    speak("Previous slide");
-    controlLocalPPT("back");
-    return;
-  }
-
-  if(text.includes("end presentation") || text.includes("close presentation")) {
-    speak("Ending presentation");
-    controlLocalPPT("end");
-    return;
-  }
-
-  // ----- CLOSE TAB -----
-  if(text.includes("close tab")) {
-    if(lastTab && !lastTab.closed) { lastTab.close(); lastTab = null; speak("Closing tab"); } 
-    else speak("No active tab");
-    return;
-  }
-
-  speak("Command received");
-}
-
-recog.onresult = e => {
-  const transcript = e.results[e.results.length - 1][0].transcript;
-  handleCommand(transcript);
-};
-
-recog.onend = () => recog.start();
-
-recog.start();
-speak("Rib AI initialized. Systems online.");
 </script>
 
 </body>
