@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JDVP — NC II & COC Almagro District Records </title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- XLSX for export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      /* DICT-like color palette (friendly, high contrast) */
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --muted: #6b7280;
+      --accent: #0b5ed7;   /* primary blue */
+      --accent-2:#0e7be0;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --border:#e6edf5;
+      --shadow: 0 6px 18px rgba(11,94,215,0.08);
+      --radius:10px;
+      --max-width:1100px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    /* Reset + base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+
+    /* App container */
+    .app {
+      width:100%;
+      max-width:var(--max-width);
+      min-height:600px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98));
+      border-radius:12px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      border:1px solid var(--border);
+    }
+
+    header.app-header{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+
+    .brand {
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    .brand .logo {
+      width:48px;height:48px;border-radius:8px;
+      background:linear-gradient(135deg,var(--accent), var(--accent-2));
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+      font-size:18px;
+      box-shadow:0 6px 14px rgba(11,94,215,0.18);
+    }
+    .brand h1{font-size:18px;margin:0}
+    .brand p{margin:0;font-size:13px;color:var(--muted)}
+
+    /* header actions */
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .btn {
+      background:var(--accent); color:white; border:none; padding:10px 14px;border-radius:8px;
+      font-weight:600; cursor:pointer; box-shadow:0 6px 14px rgba(11,94,215,0.12);
+    }
+    .btn.secondary {
+      background:#fff; color:var(--accent); border:1px solid rgba(11,94,215,0.12); box-shadow:none;
+    }
+    .btn.ghost { background:transparent; color:var(--accent); border:1px dashed rgba(11,94,215,0.12) }
+
+    /* layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:18px;
+    }
+
+    @media (max-width:980px){
+      .grid{ grid-template-columns: 1fr; }
+      .header-actions{flex-direction:column;align-items:flex-end}
+    }
+
+    /* left column */
+    .main-panel{
+      background:var(--panel); padding:18px; border-radius:var(--radius); border:1px solid var(--border);
+    }
+
+    .cards {
+      display:flex; gap:12px; margin-bottom:12px;
+    }
+    .card{
+      flex:1; padding:14px; border-radius:10px; background:linear-gradient(180deg,#fff,#fbfdff);
+      border:1px solid var(--border); box-shadow:0 6px 18px rgba(2,6,23,0.03);
+    }
+    .card h3{margin:0;font-size:13px;color:var(--muted)}
+    .card p{margin-top:6px;font-size:22px;font-weight:700;color:#0b5ed7}
+
+    /* controls row */
+    .controls{ display:flex; gap:12px; align-items:center; margin:12px 0 18px 0; flex-wrap:wrap }
+    .controls input[type="text"], .controls select{
+      padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:transparent; min-width:180px;
+    }
+
+    /* table */
+    .table-wrap{ overflow:auto; border-radius:8px; border:1px solid var(--border) }
+    table{ width:100%; border-collapse:collapse; min-width:760px; }
+    th, td{ padding:12px 14px; text-align:left; vertical-align:middle; border-bottom:1px solid var(--border); font-size:13px }
+    thead th{ background:#fbfdff; color:#0b2447; font-weight:600; position:sticky; top:0 }
+    tr:hover td{ background:#fbfdff }
+
+    .actions { display:flex; gap:8px }
+    .action-btn{ border:none; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px }
+    .action-btn.view{ background:#eef9f1; color:var(--success); border:1px solid rgba(22,163,74,0.12) }
+    .action-btn.edit{ background:#fff7ed; color:#b45309; border:1px solid rgba(180,83,9,0.08) }
+    .action-btn.delete{ background:#fff1f2; color:var(--danger); border:1px solid rgba(220,38,38,0.08) }
+
+    /* right panel */
+    .side-panel{ background:var(--panel); padding:16px; border-radius:var(--radius); border:1px solid var(--border) }
+    .side-panel h4{ margin:0 0 8px 0 }
+    .stat-list{ display:flex; flex-direction:column; gap:8px; margin-top:8px }
+    .stat-item{ display:flex; justify-content:space-between; padding:8px; border-radius:8px; background:#fbfdff; border:1px solid var(--border) }
+
+    /* modal */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,23,0.45); display:none; align-items:center; justify-content:center; z-index:30 }
+    .modal{
+      width:100%; max-width:620px; background:var(--panel); border-radius:12px; padding:18px; border:1px solid var(--border);
+      box-shadow:0 20px 40px rgba(2,6,23,0.2);
+    }
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+    .form-row{ margin-bottom:10px }
+    label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px }
+    input[type="text"], input[type="number"], select, input[type="file"]{
+      width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:transparent;
+    }
+    .modal-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:14px }
+
+    /* certificate preview */
+    .cert-preview{ margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+    .cert-thumb{ width:72px; height:48px; object-fit:cover; border-radius:6px; border:1px solid var(--border) }
+
+    /* small helpers */
+    .muted { color:var(--muted); font-size:13px }
+    .small { font-size:12px }
+    .sr-only{ position:absolute; left:-9999px; top:auto; width:1px;height:1px; overflow:hidden }
+
+    /* print styles */
+    @media print{
+      body{ padding:0 }
+      .app{ box-shadow:none; border:none; }
+      .header-actions, .controls, .side-panel, .btn { display:none !important }
+      table{ font-size:12px }
+    }
+
+    /* mobile tweaks */
+    @media (max-width:680px){
+      .cards{ flex-direction:column }
+      .form-grid{ grid-template-columns:1fr }
+      .controls input[type="text"], .controls select{ min-width:120px; flex:1 }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="JDVP NC II and COC Records System">
+    <!-- Header -->
+    <header class="app-header" role="banner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">JD</div>
+        <div>
+          <h1>JDVP — District NC II & COC Records</h1>
+          <p class="muted">District tracking system • DICT-style, government-friendly UI</p>
+        </div>
+      </div>
+
+      <div class="header-actions" role="region" aria-label="Actions">
+        <button id="btnExport" class="btn" title="Export records to Excel">Export to Excel</button>
+        <button id="btnPrint" class="btn secondary" title="Print report">Print</button>
+        <button id="btnAdd" class="btn">+ Add Record</button>
+      </div>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid" role="main">
+      <!-- Left: main panel -->
+      <section class="main-panel" aria-labelledby="dashboard-title">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2 id="dashboard-title" style="margin:0">Dashboard</h2>
+            <p class="muted small" style="margin-top:6px">Overview of NC II and COC passers by year and school</p>
+          </div>
+          <div class="muted small">Records stored locally (browser).</div>
+        </div>
+
+        <!-- cards -->
+        <div class="cards" style="margin-top:12px">
+          <div class="card">
+            <h3>Total Registered</h3>
+            <p id="statTotal">0</p>
+          </div>
+          <div class="card">
+            <h3>NC II Passers</h3>
+            <p id="statNCII">0</p>
+          </div>
+          <div class="card">
+            <h3>COC Holders</h3>
+            <p id="statCOC">0</p>
+          </div>
+        </div>
+
+        <!-- controls -->
+        <div class="controls" aria-label="Search and filters">
+          <input id="searchInput" type="text" placeholder="Search by name, LRN, or school" aria-label="Search">
+          <select id="filterSchool" aria-label="Filter by school"><option value="">All schools</option></select>
+          <select id="filterQualification" aria-label="Filter by qualification"><option value="">All qualifications</option></select>
+          <select id="filterYear" aria-label="Filter by year"><option value="">All years</option></select>
+        </div>
+
+        <!-- table -->
+        <div class="table-wrap" role="region" aria-label="Records table">
+          <table id="recordsTable" role="table" aria-describedby="dashboard-title">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">LRN</th>
+                <th scope="col">Name</th>
+                <th scope="col">School</th>
+                <th scope="col">Qualification</th>
+                <th scope="col">Status</th>
+                <th scope="col">Year</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Right: side panel -->
+      <aside class="side-panel" aria-labelledby="side-stats">
+        <h4 id="side-stats">Quick Stats</h4>
+        <div class="stat-list">
+          <div class="stat-item"><div class="muted">Records </div><div id="statLocal">0</div></div>
+          <div class="stat-item"><div class="muted">Unique Schools</div><div id="statSchools">0</div></div>
+          <div class="stat-item"><div class="muted">Unique Qualifications</div><div id="statQuals">0</div></div>
+        </div>
+
+        <hr style="margin:14px 0;border:none;border-top:1px solid var(--border)">
+
+        <div>
+          <h4 style="margin-bottom:8px">Instructions</h4>
+          <p class="muted small">Use <strong>+ Add Record</strong> to register NC II or COC passers. You can edit or delete records. Data is stored on this browser — export regularly for backups.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Modal (Add / Edit) -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="modalTitle">Add Student Record</h3>
+        <button id="closeModal" class="btn secondary" aria-label="Close form">Close</button>
+      </div>
+
+      <form id="recordForm" style="margin-top:12px">
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="lrn">LRN</label>
+            <input id="lrn" name="lrn" type="text" required aria-required="true" />
+          </div>
+
+          <div class="form-row">
+            <label for="year">Year</label>
+            <input id="year" name="year" type="number" min="2000" max="2100" required />
+          </div>
+
+          <div class="form-row" style="grid-column:span 2">
+            <label for="name">Student Full Name</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+
+          <div class="form-row">
+            <label for="school">School</label>
+            <input id="school" name="school" type="text" required />
+          </div>
+
+          <div class="form-row">
+            <label for="qualification">Qualification (ex. Cookery NC II)</label>
+            <input id="qualification" name="qualification" type="text" required />
+          </div>
+
+          <div class="form-row">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+              <option>NC II Passed</option>
+              <option>COC Holder</option>
+            </select>
+          </div>
+
+          <div class="form-row" style="grid-column:span 2">
+            <label for="certificate">Certificate Image (optional)</label>
+            <input id="certificate" type="file" accept="image/*" />
+            <div id="certPreview" class="cert-preview" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnSave" class="btn">Save</button>
+          <button type="button" id="btnCancel" class="btn secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  /*************************************************************************
+   * JDVP District Records — Full client-side app
+   * - storage uses localStorage (key 'jdvp_records_v1')
+   * - supports add/edit/delete, search, filters, export (XLSX)
+   *************************************************************************/
+
+  // --- Utilities ---
+  const STORAGE_KEY = 'jdvp_records_v1';
+
+  function uid() { return 'id_' + Math.random().toString(36).slice(2,9); }
+
+  function readStorage(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e){ console.error(e); return []; }
+  }
+
+  function writeStorage(data){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  // --- App state ---
+  let records = readStorage();        // array of record objects
+  let editingId = null;              // id when editing
+
+  // --- DOM references ---
+  const tbody = document.querySelector('#recordsTable tbody');
+  const statTotal = document.getElementById('statTotal');
+  const statNCII = document.getElementById('statNCII');
+  const statCOC = document.getElementById('statCOC');
+  const statLocal = document.getElementById('statLocal');
+  const statSchools = document.getElementById('statSchools');
+  const statQuals = document.getElementById('statQuals');
+
+  const searchInput = document.getElementById('searchInput');
+  const filterSchool = document.getElementById('filterSchool');
+  const filterQualification = document.getElementById('filterQualification');
+  const filterYear = document.getElementById('filterYear');
+
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const btnAdd = document.getElementById('btnAdd');
+  const btnCloseModal = document.getElementById('closeModal');
+  const btnCancel = document.getElementById('btnCancel');
+  const btnSave = document.getElementById('btnSave');
+
+  const inputLRN = document.getElementById('lrn');
+  const inputName = document.getElementById('name');
+  const inputSchool = document.getElementById('school');
+  const inputQualification = document.getElementById('qualification');
+  const inputStatus = document.getElementById('status');
+  const inputYear = document.getElementById('year');
+  const inputCertificate = document.getElementById('certificate');
+  const certPreview = document.getElementById('certPreview');
+
+  const btnExport = document.getElementById('btnExport');
+  const btnPrint = document.getElementById('btnPrint');
+
+  // --- Render / helpers ---
+  function normalizeText(s){ return (s||'').toString().trim(); }
+
+  function refreshUI(){
+    renderTable();
+    updateStats();
+    buildFilters();
+  }
+
+  function renderTable(){
+    const q = normalizeText(searchInput.value).toLowerCase();
+    const schoolF = filterSchool.value;
+    const qualF = filterQualification.value;
+    const yearF = filterYear.value;
+
+    tbody.innerHTML = '';
+    let i = 0;
+
+    // filter
+    const filtered = records.filter(r => {
+      const matchSearch = !q || (r.name + ' ' + r.lrn + ' ' + r.school + ' ' + r.qualification).toLowerCase().includes(q);
+      const matchSchool = !schoolF || r.school === schoolF;
+      const matchQual = !qualF || r.qualification === qualF;
+      const matchYear = !yearF || r.year === yearF;
+      return matchSearch && matchSchool && matchQual && matchYear;
+    });
+
+    filtered.forEach((r) => {
+      i++;
+      const tr = document.createElement('tr');
+
+      // columns
+      tr.innerHTML = `
+        <td>${i}</td>
+        <td>${escapeHtml(r.lrn)}</td>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.school)}</td>
+        <td>${escapeHtml(r.qualification)}</td>
+        <td>${escapeHtml(r.status)}</td>
+        <td>${escapeHtml(r.year)}</td>
+        <td>
+          <div class="actions" role="group" aria-label="Record actions">
+            ${r.certificate ? `<button class="action-btn view" data-id="${r.id}" data-action="view">View</button>` : ''}
+            <button class="action-btn edit" data-id="${r.id}" data-action="edit">Edit</button>
+            <button class="action-btn delete" data-id="${r.id}" data-action="delete">Delete</button>
+          </div>
+        </td>`;
+
+      tbody.appendChild(tr);
+    });
+
+    if(filtered.length === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No records found.</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function updateStats(){
+    statTotal.textContent = records.length;
+    statNCII.textContent = records.filter(r => r.status === 'NC II Passed').length;
+    statCOC.textContent = records.filter(r => r.status === 'COC Holder').length;
+    statLocal.textContent = records.length;
+    statSchools.textContent = new Set(records.map(r=>r.school)).size;
+    statQuals.textContent = new Set(records.map(r=>r.qualification)).size;
+  }
+
+  function buildFilters(){
+    // build sorted unique lists
+    const schools = Array.from(new Set(records.map(r => r.school))).sort();
+    const quals = Array.from(new Set(records.map(r => r.qualification))).sort();
+    const years = Array.from(new Set(records.map(r => r.year))).sort((a,b)=>b-a);
+
+    // helper to populate select
+    function populate(selectEl, items, allLabel){
+      const val = selectEl.value;
+      selectEl.innerHTML = `<option value="">${allLabel}</option>` + items.map(it=>`<option value="${escapeHtml(it)}">${escapeHtml(it)}</option>`).join('');
+      // try restore previous selection if still present
+      if(items.includes(val)) selectEl.value = val;
+    }
+
+    populate(filterSchool, schools, 'All schools');
+    populate(filterQualification, quals, 'All qualifications');
+    populate(filterYear, years, 'All years');
+  }
+
+  // --- Form open / close / populate ---
+  function openModal(editId = null){
+    editingId = editId;
+    modalBackdrop.style.display = 'flex';
+    modalBackdrop.setAttribute('aria-hidden','false');
+
+    if(editId){
+      // populate
+      const rec = records.find(r => r.id === editId);
+      if(!rec) return;
+      inputLRN.value = rec.lrn;
+      inputName.value = rec.name;
+      inputSchool.value = rec.school;
+      inputQualification.value = rec.qualification;
+      inputStatus.value = rec.status;
+      inputYear.value = rec.year;
+      // show cert preview if exists
+      showCertPreview(rec.certificate);
+      document.getElementById('modalTitle').textContent = 'Edit Student Record';
+    } else {
+      // clear form
+      editingId = null;
+      inputLRN.value = '';
+      inputName.value = '';
+      inputSchool.value = '';
+      inputQualification.value = '';
+      inputStatus.value = 'NC II Passed';
+      inputYear.value = (new Date()).getFullYear();
+      inputCertificate.value = '';
+      certPreview.innerHTML = '';
+      document.getElementById('modalTitle').textContent = 'Add Student Record';
+    }
+
+    // focus first field for keyboard users
+    setTimeout(()=> inputLRN.focus(), 100);
+  }
+
+  function closeModal(){
+    modalBackdrop.style.display = 'none';
+    modalBackdrop.setAttribute('aria-hidden','true');
+  }
+
+  // certificate preview
+  function showCertPreview(dataUrl){
+    certPreview.innerHTML = '';
+    if(!dataUrl) return;
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.className = 'cert-thumb';
+    img.alt = 'Certificate preview';
+    certPreview.appendChild(img);
+  }
+
+  // --- Save (Add or Update) ---
+  async function saveRecord(){
+    const lrn = normalizeText(inputLRN.value);
+    const name = normalizeText(inputName.value);
+    const school = normalizeText(inputSchool.value);
+    const qualification = normalizeText(inputQualification.value);
+    const status = inputStatus.value;
+    const year = normalizeText(inputYear.value);
+
+    if(!lrn || !name || !school || !qualification || !year){
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    // handle certificate file if provided
+    let certData = null;
+    if(inputCertificate.files && inputCertificate.files[0]){
+      const file = inputCertificate.files[0];
+      // limit file size to 1.5MB for localStorage practicality
+      if(file.size > 1.5 * 1024 * 1024){
+        if(!confirm('Selected certificate is larger than 1.5MB and may not save in local storage reliably. Continue?')) return;
+      }
+      certData = await fileToDataURL(file);
+    } else if(editingId){
+      // if editing and no new file, keep existing certificate if any
+      const existing = records.find(r=>r.id === editingId);
+      certData = existing ? existing.certificate : null;
+    }
+
+    if(editingId){
+      // update
+      const idx = records.findIndex(r => r.id === editingId);
+      if(idx !== -1){
+        records[idx] = {
+          ...records[idx],
+          lrn, name, school, qualification, status, year, certificate: certData
+        };
+      }
+    } else {
+      // add new
+      records.push({
+        id: uid(),
+        lrn, name, school, qualification, status, year, certificate: certData,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    writeStorage(records);
+    closeModal();
+    refreshUI();
+  }
+
+  // delete record
+  function deleteRecord(id){
+    if(!confirm('Delete this record? This cannot be undone.')) return;
+    records = records.filter(r => r.id !== id);
+    writeStorage(records);
+    refreshUI();
+  }
+
+  // edit
+  function editRecord(id){
+    openModal(id);
+  }
+
+  // view certificate
+  function viewCertificate(id){
+    const rec = records.find(r => r.id === id);
+    if(!rec || !rec.certificate){
+      alert('No certificate attached for this record.');
+      return;
+    }
+    // open in new window/tab
+    const win = window.open();
+    win.document.write(`<title>Certificate - ${escapeHtml(rec.name)}</title><img src="${rec.certificate}" style="max-width:100%;height:auto" alt="Certificate">`);
+  }
+
+  // file -> dataURL
+  function fileToDataURL(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // export to Excel using XLSX
+  function exportToExcel(){
+    if(records.length === 0){ alert('No records to export.'); return; }
+    // prepare data without certificate dataurls (too large)
+    const data = records.map(r => ({
+      LRN: r.lrn, Name: r.name, School: r.school, Qualification: r.qualification,
+      Status: r.status, Year: r.year, CreatedAt: r.createdAt || ''
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'JDVP_Records');
+    XLSX.writeFile(wb, `JDVP_Records_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+
+  // escape to avoid basic html injection within table
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m];}); }
+
+  // helper: convert file input change -> preview
+  inputCertificate.addEventListener('change', async () => {
+    if(inputCertificate.files && inputCertificate.files[0]){
+      const f = inputCertificate.files[0];
+      // show temporary preview via object URL then convert to dataURL on save
+      const url = URL.createObjectURL(f);
+      certPreview.innerHTML = `<img src="${url}" class="cert-thumb" alt="Preview">`;
+      // revoke object URL after image loads
+      setTimeout(()=> URL.revokeObjectURL(url), 5000);
+    } else {
+      certPreview.innerHTML = '';
+    }
+  });
+
+  // Event delegation for action buttons in table
+  tbody.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = btn.getAttribute('data-id');
+    const action = btn.getAttribute('data-action');
+    if(action === 'view') viewCertificate(id);
+    if(action === 'edit') editRecord(id);
+    if(action === 'delete') deleteRecord(id);
+  });
+
+  // search & filter events
+  [searchInput, filterSchool, filterQualification, filterYear].forEach(el => {
+    el.addEventListener('input', () => renderTable());
+    el.addEventListener('change', () => renderTable());
+  });
+
+  // header buttons
+  btnAdd.addEventListener('click', ()=> openModal(null));
+  btnCloseModal.addEventListener('click', closeModal);
+  btnCancel.addEventListener('click', closeModal);
+  btnSave.addEventListener('click', saveRecord);
+  btnExport.addEventListener('click', exportToExcel);
+  btnPrint.addEventListener('click', ()=> window.print());
+
+  // close modal on backdrop click
+  modalBackdrop.addEventListener('click', (ev) => {
+    if(ev.target === modalBackdrop) closeModal();
+  });
+
+  // keyboard accessibility: Esc closes modal
+  document.addEventListener('keydown', (ev) => {
+    if(ev.key === 'Escape' && modalBackdrop.style.display === 'flex') closeModal();
+  });
+
+  // init
+  function refreshUI(){ renderTable(); updateStats(); buildFilters(); }
+  refreshUI();
+
+  /* ---------------------
+     Example demo data loader (uncomment to prefill)
+     ---------------------
+  (function seed(){
+    if(records.length === 0){
+      records.push({ id: uid(), lrn:'20230001', name:'Juan Dela Cruz', school:'Central High School', qualification:'Cookery NC II', status:'NC II Passed', year:'2023', certificate:null, createdAt: new Date().toISOString() });
+      records.push({ id: uid(), lrn:'20230002', name:'Maria Santos', school:'East HS', qualification:'SMAW NC II', status:'COC Holder', year:'2023', certificate:null, createdAt: new Date().toISOString() });
+      writeStorage(records);
+      refreshUI();
+    }
+  })();
+  */
+
+  </script>
+</body>
+</html>

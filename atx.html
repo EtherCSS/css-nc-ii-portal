@@ -1,201 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATX 24-Pin PSU Simulator</title>
-<style>
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: #0a0a0a;
-  color: #fff;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-}
-header {
-  background: #111;
-  padding: 20px;
-  border-bottom: 2px solid #4cafef;
-}
-h1 { color: #4cafef; margin: 0; }
-#psu-container {
-  margin: 20px auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.wire {
-  width: 80px;
-  height: 30px;
-  margin: 5px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  cursor: grab;
-  color: #fff;
-  border: 2px solid #fff;
-}
-.wire[data-color="orange"] { background: orange; color:#111; }
-.wire[data-color="red"] { background: red; }
-.wire[data-color="yellow"] { background: yellow; color: #111; }
-.wire[data-color="black"] { background: black; }
-.wire[data-color="blue"] { background: blue; }
-.wire[data-color="purple"] { background: purple; }
-.wire[data-color="gray"] { background: gray; color:#111; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATX Power Supply Simulator</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-#connector {
-  display: grid;
-  grid-template-columns: repeat(12, 50px);
-  grid-template-rows: repeat(2, 50px);
-  gap: 5px;
-  margin-top: 20px;
-}
-.pin {
-  border: 2px dashed #4cafef;
-  background: #1c1c1c;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 10px;
-  color: #fff;
-}
-#feedback {
-  margin-top: 20px;
-  font-size: 18px;
-  font-weight: bold;
-}
-#score {
-  margin-top: 10px;
-  font-size: 16px;
-  color: #4cafef;
-}
-button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  background: #4cafef;
-  color: #111;
-  transition: 0.3s;
-}
-button:hover {
-  background: #1b75d6;
-}
-</style>
+  <style>
+    :root {
+      --primary: #ff9f1a;
+      --bg-dark: #09090b;
+      --surface: #18181b;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; user-select: none; }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% 0%, rgba(255, 159, 26, 0.05) 0%, transparent 50%);
+    }
+
+    /* --- Header --- */
+    header {
+      width: 100%;
+      padding: 20px;
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0; color: var(--primary); font-size: 24px; font-weight: 800; }
+    p { margin: 5px 0 0; font-size: 14px; color: #a1a1aa; }
+
+    /* --- Main Workspace --- */
+    .workspace {
+      display: flex;
+      gap: 40px;
+      padding: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    /* --- Wire Toolbox (Left Side) --- */
+    .toolbox {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toolbox h3 { margin: 0 0 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a1a1aa; }
+
+    .wire {
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: grab;
+      text-align: center;
+      transition: transform 0.2s;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .wire:active { cursor: grabbing; transform: scale(0.95); }
+    
+    /* Wire Colors */
+    .w-orange { background: #e67e22; color: #000; }
+    .w-red    { background: #e74c3c; color: #fff; }
+    .w-yellow { background: #f1c40f; color: #000; }
+    .w-black  { background: #2c3e50; color: #fff; }
+    .w-blue   { background: #3498db; color: #fff; }
+    .w-purple { background: #9b59b6; color: #fff; }
+    .w-gray   { background: #95a5a6; color: #000; }
+
+    /* --- Connector Board (Center) --- */
+    .connector-housing {
+      background: #eee;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 2px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      gap: 4px; /* Gap between rows */
+      position: relative;
+    }
+    /* Keying notch visualization */
+    .connector-housing::after {
+      content: "MOBO SIDE";
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; color: #666; font-weight: 700;
+    }
+
+    .pin-row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+    }
+
+    .pin {
+      width: 45px; height: 55px;
+      background: #222; /* Empty hole color */
+      border: 2px solid #ccc; /* Plastic rim */
+      border-radius: 4px; /* Square with slight round */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #777;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    
+    .pin span.num {
+      position: absolute; top: 2px; right: 2px;
+      font-size: 8px; opacity: 0.5;
+    }
+    
+    .pin.drag-over { background: #333; border-color: var(--primary); }
+    .pin.filled { 
+      border-color: transparent; 
+      color: inherit; /* Takes text color from wire class */
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    /* --- Feedback & Controls --- */
+    .status-panel {
+      width: 100%;
+      text-align: center;
+      margin-top: 20px;
+    }
+    #feedback {
+      font-weight: 600; height: 24px; margin-bottom: 10px;
+    }
+    .score-badge {
+      background: var(--surface);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .btn-reset {
+      margin-top: 15px;
+      padding: 10px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--primary); color: var(--primary); }
+
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>ATX 24-Pin PSU Simulator</h1>
-  <p>Drag the wires to the correct pins (2 rows of 12 pins each)</p>
-</header>
+  <header>
+    <h1><i class="fa-solid fa-plug"></i> ATX 24-Pin Simulator</h1>
+    <p>Wire the motherboard power connector correctly.</p>
+  </header>
 
-<div id="psu-container">
-  <div>
-    <div class="wire" draggable="true" data-color="orange">+3.3V</div>
-    <div class="wire" draggable="true" data-color="red">+5V</div>
-    <div class="wire" draggable="true" data-color="yellow">+12V</div>
-    <div class="wire" draggable="true" data-color="black">GND</div>
-    <div class="wire" draggable="true" data-color="blue">-12V</div>
-    <div class="wire" draggable="true" data-color="purple">5VSB</div>
-    <div class="wire" draggable="true" data-color="gray">PS-ON</div>
+  <div class="workspace">
+    
+    <div class="toolbox">
+      <h3>Wire Supply</h3>
+      <div class="wire w-orange" draggable="true" data-type="orange">+3.3V</div>
+      <div class="wire w-red" draggable="true" data-type="red">+5V</div>
+      <div class="wire w-yellow" draggable="true" data-type="yellow">+12V</div>
+      <div class="wire w-black" draggable="true" data-type="black">GND</div>
+      <div class="wire w-blue" draggable="true" data-type="blue">-12V</div>
+      <div class="wire w-purple" draggable="true" data-type="purple">5VSB</div>
+      <div class="wire w-gray" draggable="true" data-type="gray">PS-ON</div>
+    </div>
+
+    <div>
+      <div class="connector-housing">
+        
+        <div class="pin-row">
+          <div class="pin" data-accept="orange" data-id="13"><span class="num">13</span></div>
+          <div class="pin" data-accept="blue" data-id="14"><span class="num">14</span></div>
+          <div class="pin" data-accept="black" data-id="15"><span class="num">15</span></div>
+          <div class="pin" data-accept="gray" data-id="16"><span class="num">16</span></div>
+          <div class="pin" data-accept="black" data-id="17"><span class="num">17</span></div>
+          <div class="pin" data-accept="black" data-id="18"><span class="num">18</span></div>
+          <div class="pin" data-accept="black" data-id="19"><span class="num">19</span></div>
+          <div class="pin" data-accept="white" data-id="20"><span class="num">20</span></div> <div class="pin" data-accept="red" data-id="21"><span class="num">21</span></div>
+          <div class="pin" data-accept="red" data-id="22"><span class="num">22</span></div>
+          <div class="pin" data-accept="red" data-id="23"><span class="num">23</span></div>
+          <div class="pin" data-accept="black" data-id="24"><span class="num">24</span></div>
+        </div>
+
+        <div class="pin-row">
+          <div class="pin" data-accept="orange" data-id="1"><span class="num">1</span></div>
+          <div class="pin" data-accept="orange" data-id="2"><span class="num">2</span></div>
+          <div class="pin" data-accept="black" data-id="3"><span class="num">3</span></div>
+          <div class="pin" data-accept="red" data-id="4"><span class="num">4</span></div>
+          <div class="pin" data-accept="black" data-id="5"><span class="num">5</span></div>
+          <div class="pin" data-accept="red" data-id="6"><span class="num">6</span></div>
+          <div class="pin" data-accept="black" data-id="7"><span class="num">7</span></div>
+          <div class="pin" data-accept="gray" data-id="8"><span class="num">8</span></div> <div class="pin" data-accept="purple" data-id="9"><span class="num">9</span></div>
+          <div class="pin" data-accept="yellow" data-id="10"><span class="num">10</span></div>
+          <div class="pin" data-accept="yellow" data-id="11"><span class="num">11</span></div>
+          <div class="pin" data-accept="orange" data-id="12"><span class="num">12</span></div>
+        </div>
+
+      </div>
+
+      <div class="status-panel">
+        <div id="feedback">Drag a wire...</div>
+        <span class="score-badge">Score: <span id="scoreVal">0</span> / 24</span>
+        <br>
+        <button class="btn-reset" onclick="resetSim()">Reset Simulator</button>
+      </div>
+
+    </div>
   </div>
-<!-- Updated connector HTML with visible pin numbers and voltage labels -->
-<div id="connector">
-  <!-- Swapped: Row 2 first (pins 13-24) -->
-  <div class="pin" data-accept="orange">13<br>+3.3V</div>
-  <div class="pin" data-accept="orange">14<br>+3.3V</div>
-  <div class="pin" data-accept="black">15<br>GND</div>
-  <div class="pin" data-accept="black">16<br>GND</div>
-  <div class="pin" data-accept="black">17<br>GND</div>
-  <div class="pin" data-accept="red">18<br>+5V</div>
-  <div class="pin" data-accept="red">19<br>+5V</div>
-  <div class="pin" data-accept="yellow">20<br>+12V</div>
-  <div class="pin" data-accept="black">21<br>GND</div>
-  <div class="pin" data-accept="gray">22<br>PS-ON</div>
-  <div class="pin" data-accept="purple">23<br>5VSB</div>
-  <div class="pin" data-accept="black">24<br>GND</div>
 
-  <!-- Row 1 below (pins 1-12) -->
-  <div class="pin" data-accept="orange">1<br>+3.3V</div>
-  <div class="pin" data-accept="orange">2<br>+3.3V</div>
-  <div class="pin" data-accept="red">3<br>+5V</div>
-  <div class="pin" data-accept="red">4<br>+5V</div>
-  <div class="pin" data-accept="black">5<br>GND</div>
-  <div class="pin" data-accept="black">6<br>GND</div>
-  <div class="pin" data-accept="yellow">7<br>+12V</div>
-  <div class="pin" data-accept="yellow">8<br>+12V</div>
-  <div class="pin" data-accept="black">9<br>GND</div>
-  <div class="pin" data-accept="purple">10<br>5VSB</div>
-  <div class="pin" data-accept="gray">11<br>PS-ON</div>
-  <div class="pin" data-accept="blue">12<br>-12V</div>
-</div>
+  <script>
+    // --- Configuration Logic ---
+    // Note: Standard ATX 24-pin colors:
+    // 1: Orange (3.3V), 2: Orange (3.3V), 3: Black, 4: Red (5V), 5: Black, 6: Red (5V)
+    // 7: Black, 8: Gray (PWR_OK), 9: Purple (5VSB), 10: Yellow (12V), 11: Yellow (12V), 12: Orange (3.3V)
+    // 13: Orange (3.3V), 14: Blue (-12V), 15: Black, 16: Green (PS_ON), 17: Black, 18: Black
+    // 19: Black, 20: White/NC (-5V obsolete), 21: Red (5V), 22: Red (5V), 23: Red (5V), 24: Black
+    
+    // Adjusting HTML data-accept attributes to match standard ATX logic exactly for better learning
+    // Pins 8 (Gray/PWR_OK) and 16 (Green/PS_ON) are crucial distinctions.
+    // In the HTML above, I simplified logic to colors provided in toolbox. 
+    // Let's refine the logic in JS to be forgiving but accurate.
 
-  <button onclick="resetPSU()">Reset</button>
-</div>
+    const pins = document.querySelectorAll('.pin');
+    const wires = document.querySelectorAll('.wire');
+    const feedback = document.getElementById('feedback');
+    const scoreVal = document.getElementById('scoreVal');
+    let currentScore = 0;
+    let draggedType = null;
+    let draggedText = null;
+    let draggedClass = null;
 
-<div id="feedback">Drag a wire to a pin.</div>
-<div id="score">Score: 0 / 24</div>
+    // Correct Mapping (Standard ATX 2.x)
+    const pinMap = {
+      1: 'orange', 2: 'orange', 3: 'black', 4: 'red', 5: 'black', 6: 'red',
+      7: 'black', 8: 'gray', 9: 'purple', 10: 'yellow', 11: 'yellow', 12: 'orange',
+      13: 'orange', 14: 'blue', 15: 'black', 16: 'gray', // PS_ON is usually Green, but we only have Gray in toolbox. Let's treat Gray as PS_ON/PWR_OK generic.
+      17: 'black', 18: 'black', 19: 'black', 20: 'white', // N/C
+      21: 'red', 22: 'red', 23: 'red', 24: 'black'
+    };
 
-<script>
-let wires = document.querySelectorAll('.wire');
-let pins = document.querySelectorAll('.pin');
-let feedback = document.getElementById('feedback');
-let scoreDisplay = document.getElementById('score');
-let draggedWire = null;
-let score = 0;
+    // Note on Pin 16: Usually Green (PS_ON). Toolbox has Gray. Let's map Pin 16 to Gray for this sim.
+    // Note on Pin 8: Usually Gray (PWR_OK). Map to Gray.
+    // Note on Pin 20: Obsolete. Let's Auto-fill or ignore.
 
-wires.forEach(w => {
-  w.addEventListener('dragstart', e => {
-    draggedWire = w;
-    setTimeout(() => w.style.display = 'none', 0);
-  });
-  w.addEventListener('dragend', e => {
-    setTimeout(() => w.style.display = 'inline-flex', 0);
-    draggedWire = null;
-  });
-});
+    wires.forEach(wire => {
+      wire.addEventListener('dragstart', (e) => {
+        draggedType = wire.dataset.type;
+        draggedText = wire.innerText;
+        // get class for color styling (w-red, etc)
+        draggedClass = Array.from(wire.classList).find(c => c.startsWith('w-'));
+        e.dataTransfer.setData('text/plain', draggedType);
+      });
+    });
 
-pins.forEach(pin => {
-  pin.addEventListener('dragover', e => e.preventDefault());
-  pin.addEventListener('drop', e => {
-    if (!draggedWire) return;
-    const wireColor = draggedWire.dataset.color;
-    const acceptColor = pin.dataset.accept;
+    pins.forEach(pin => {
+      // Auto-fill Pin 20 (N/C)
+      if(pin.dataset.id === '20') {
+        pin.style.background = '#ddd';
+        pin.innerHTML = '<span style="font-size:9px">N/C</span>';
+        pin.classList.add('filled');
+        currentScore++; // Free point
+        updateScore();
+      }
 
-    if (wireColor === acceptColor && !pin.dataset.connected) {
-      pin.style.background = draggedWire.style.background;
-      pin.textContent = draggedWire.textContent;
-      pin.dataset.connected = 'true';
-      score++;
-      feedback.style.color = '#4caf50';
-      feedback.textContent = `✅ Correct! Pin connected.`;
-    } else {
-      feedback.style.color = '#ff5252';
-      feedback.textContent = `❌ Wrong wire for this pin.`;
+      pin.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if(!pin.classList.contains('filled')) {
+          pin.classList.add('drag-over');
+        }
+      });
+
+      pin.addEventListener('dragleave', () => {
+        pin.classList.remove('drag-over');
+      });
+
+      pin.addEventListener('drop', (e) => {
+        e.preventDefault();
+        pin.classList.remove('drag-over');
+        if(pin.classList.contains('filled')) return;
+
+        const pinId = parseInt(pin.dataset.id);
+        const correctColor = pinMap[pinId];
+
+        // Logic check
+        // PS_ON (16) and PWR_OK (8) both accept Gray in this simplified toolbox
+        let isCorrect = (draggedType === correctColor);
+        
+        // Exception for Pin 20
+        if (pinId === 20) isCorrect = true; 
+
+        if (isCorrect) {
+          // Success Visuals
+          pin.classList.add('filled');
+          pin.classList.add(draggedClass);
+          pin.innerHTML = `<span style="font-size:9px">${draggedText}</span>`;
+          pin.style.border = 'none';
+          
+          currentScore++;
+          feedback.style.color = 'var(--success)';
+          feedback.innerText = "Correct Connection!";
+          updateScore();
+        } else {
+          // Fail Visuals
+          feedback.style.color = 'var(--error)';
+          feedback.innerText = "Incorrect! Check voltage.";
+          pin.style.borderColor = 'var(--error)';
+          setTimeout(() => pin.style.borderColor = '#ccc', 1000);
+        }
+      });
+    });
+
+    function updateScore() {
+      scoreVal.innerText = currentScore;
+      if(currentScore === 24) {
+        feedback.innerText = "SYSTEM POWERED UP! ⚡";
+        feedback.style.color = "var(--primary)";
+      }
     }
-    scoreDisplay.textContent = `Score: ${score} / 24`;
-  });
-});
 
-function resetPSU(){
-  pins.forEach(pin => {
-    pin.style.background = '#1c1c1c';
-    pin.textContent = pin.getAttribute('data-pin') || '';
-    pin.dataset.connected = '';
-  });
-  score = 0;
-  feedback.textContent = "Drag a wire to a pin.";
-  scoreDisplay.textContent = `Score: ${score} / 24`;
-}
-</script>
+    function resetSim() {
+      currentScore = 0;
+      updateScore();
+      feedback.innerText = "Drag a wire...";
+      feedback.style.color = "inherit";
+      
+      pins.forEach(pin => {
+        if(pin.dataset.id === '20') return; // Don't reset the N/C pin
+        pin.className = 'pin'; // remove w-colors and filled
+        pin.innerHTML = `<span class="num">${pin.dataset.id}</span>`;
+        pin.style = '';
+      });
+    }
 
+  </script>
 </body>
 </html>

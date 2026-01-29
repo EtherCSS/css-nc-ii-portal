@@ -1,236 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acer BIOS Simulator - Advanced</title>
-<style>
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #1b1b1b;
-  color: #fff;
-}
-#biosHeader {
-  background: #0b3d91;
-  padding: 15px 30px;
-  font-size: 24px;
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
-  color: #fff;
-}
-#tabs {
-  display: flex;
-  background: #222;
-  border-bottom: 2px solid #0b3d91;
-}
-.tab {
-  padding: 12px 25px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
-  color: #bbb;
-}
-.tab.active, .tab:hover {
-  background: #0b3d91;
-  color: #fff;
-}
-#main {
-  display: flex;
-  justify-content: center;
-  padding: 40px;
-  background: #2a2a2a;
-  min-height: 80vh;
-  flex-direction: column;
-  align-items: center;
-}
-h1 {
-  color: #0b3d91;
-  font-size: 28px;
-  margin-bottom: 20px;
-}
-select, button {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #0b3d91;
-  background: #1b1b1b;
-  color: #fff;
-  margin: 10px;
-}
-button {
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
-}
-button:hover { background: #1f5abf; }
-#feedback {
-  margin-top: 25px;
-  font-weight: bold;
-  font-size: 18px;
-  color: #ffb74d;
-  min-height: 24px;
-  text-align: center;
-}
-.list-device {
-  margin-top: 20px;
-  text-align: left;
-  width: 300px;
-}
-.list-device li {
-  padding: 8px;
-  border: 1px solid #0b3d91;
-  border-radius: 6px;
-  margin-bottom: 5px;
-  cursor: pointer;
-  background: #111;
-}
-.list-device li.selected { background: #0b3d91; color: #fff; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acer UEFI Simulator</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bios-bg: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.7);
+      --accent: #3b82f6; /* Electric Blue */
+      --accent-glow: rgba(59, 130, 246, 0.5);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; user-select: none; }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* --- Monitor/Screen Container --- */
+    .screen-container {
+      width: 95%;
+      max-width: 1200px;
+      height: 90vh;
+      background: var(--bios-bg);
+      border: 2px solid #333;
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 50px rgba(59, 130, 246, 0.1);
+      overflow: hidden;
+    }
+
+    /* CRT Scanline Effect */
+    .screen-container::after {
+      content: " ";
+      display: block;
+      position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+      background-size: 100% 4px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* --- Header --- */
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 15px 30px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2;
+    }
+    .brand { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 24px; color: var(--accent); letter-spacing: 2px; }
+    .clock { font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-size: 14px; }
+
+    /* --- Layout Split --- */
+    .uefi-body {
+      display: flex;
+      flex: 1;
+      z-index: 2;
+    }
+
+    /* --- Sidebar (Hardware Monitor) --- */
+    .hw-monitor {
+      width: 280px;
+      background: rgba(0,0,0,0.2);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hw-card {
+      background: var(--panel-bg);
+      padding: 15px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .hw-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+    .hw-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; color: var(--accent); font-weight: 700; }
+    .bar-container { width: 100%; height: 4px; background: #333; margin-top: 8px; border-radius: 2px; }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+
+    /* --- Main Content Area --- */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      background: rgba(0,0,0,0.3);
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      padding: 15px 30px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: 0.3s;
+      text-transform: uppercase;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+    .tab:hover { color: #fff; }
+    .tab.active { color: #fff; border-bottom-color: var(--accent); background: linear-gradient(to top, rgba(59,130,246,0.1), transparent); }
+
+    /* Content Pane */
+    .content-pane {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      display: none; /* Hidden by default */
+    }
+    .content-pane.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    h2 { margin-top: 0; font-size: 22px; border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 20px; }
+
+    /* --- Boot Priority List --- */
+    .boot-list {
+      list-style: none; padding: 0; margin: 0;
+      width: 100%; max-width: 600px;
+    }
+    .boot-item {
+      background: var(--panel-bg);
+      margin-bottom: 10px;
+      padding: 15px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .boot-item:hover { border-color: var(--text-muted); }
+    .boot-item.selected { 
+      border-color: var(--accent); 
+      background: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+    .boot-item.disabled { opacity: 0.5; filter: grayscale(1); }
+    
+    .boot-rank { 
+      font-family: 'JetBrains Mono', monospace; font-weight: 800; 
+      background: #000; padding: 4px 8px; border-radius: 4px; margin-right: 15px; color: var(--text-muted);
+    }
+    .boot-name { font-weight: 600; flex: 1; display: flex; align-items: center; gap: 10px; }
+
+    /* --- Controls --- */
+    .control-bar {
+      margin-top: 30px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      transition: 0.2s;
+      font-size: 13px;
+    }
+    .btn:hover { background: var(--accent); border-color: var(--accent); color: #000; }
+    .btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .btn-success:hover { background: var(--success); border-color: var(--success); color: #000; }
+
+    /* --- Feedback --- */
+    #feedback {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+    .feedback-success { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: var(--success); }
+    .feedback-error { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: var(--danger); }
+
+    /* --- Footer (Key Legend) --- */
+    footer {
+      background: #000;
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      z-index: 2;
+    }
+    .key-hint span { color: #fff; font-weight: bold; background: #333; padding: 2px 6px; border-radius: 3px; margin-right: 5px; }
+
+  </style>
 </head>
 <body>
 
-<div id="biosHeader">
-  Acer BIOS Simulator
-  <span>F10: Save & Exit | ESC: Exit</span>
-</div>
+<div class="screen-container">
+  
+  <header>
+    <div class="brand"><i class="fa-solid fa-microchip"></i> ACER UEFI UTILITY</div>
+    <div class="clock" id="clock">00:00:00</div>
+  </header>
 
-<div id="tabs">
-  <div class="tab active" data-tab="boot">Boot</div>
-  <div class="tab" data-tab="system">System Info</div>
-  <div class="tab" data-tab="security">Security</div>
-  <div class="tab" data-tab="exit">Exit</div>
-</div>
+  <div class="uefi-body">
+    
+    <aside class="hw-monitor">
+      <div class="hw-card">
+        <div class="hw-label">CPU Freq</div>
+        <div class="hw-value">4200 MHz</div>
+        <div class="bar-container"><div class="bar-fill" style="width: 80%"></div></div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-label">CPU Temp</div>
+        <div class="hw-value">45°C</div>
+        <div class="bar-container"><div class="bar-fill" style="width: 40%; background: #10b981"></div></div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-label">Core Voltage</div>
+        <div class="hw-value">1.350 V</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-label">Memory</div>
+        <div class="hw-value">16384 MB</div>
+        <div class="hw-label" style="margin-top:5px">2666 MHz</div>
+      </div>
+    </aside>
 
-<div id="main">
-  <h1>Boot Priority</h1>
-  <p>Reorder devices (select device then move up/down)</p>
-  <ul class="list-device" id="bootList">
-    <li>HDD (Hard Disk Drive)</li>
-    <li>CD/DVD Drive</li>
-    <li>USB Flash Drive</li>
-    <li>Network/PXE</li>
-  </ul>
-  <div>
-    <button onclick="moveUp()">Move Up</button>
-    <button onclick="moveDown()">Move Down</button>
-    <button onclick="disableDevice()">Enable/Disable</button>
-    <button onclick="saveExit()">Save & Exit (F10)</button>
-    <button onclick="resetBIOS()">Reset</button>
+    <main class="main-content">
+      <nav class="nav-tabs">
+        <div class="tab" onclick="switchTab('system')">System</div>
+        <div class="tab active" onclick="switchTab('boot')">Boot Priority</div>
+        <div class="tab" onclick="switchTab('security')">Security</div>
+        <div class="tab" onclick="switchTab('exit')">Save & Exit</div>
+      </nav>
+
+      <div id="system" class="content-pane">
+        <h2>System Information</h2>
+        <table style="width:100%; border-collapse:collapse; color:#ccc;">
+          <tr style="border-bottom:1px solid #333"><td style="padding:10px">BIOS Version</td><td style="color:#fff">V1.23 (09/20/2025)</td></tr>
+          <tr style="border-bottom:1px solid #333"><td style="padding:10px">Processor Type</td><td style="color:#fff">Intel(R) Core(TM) i5-12400</td></tr>
+          <tr style="border-bottom:1px solid #333"><td style="padding:10px">System Memory</td><td style="color:#fff">16GB DDR4</td></tr>
+          <tr style="border-bottom:1px solid #333"><td style="padding:10px">Asset Tag</td><td style="color:#fff">Acer-Predator-X</td></tr>
+        </table>
+      </div>
+
+      <div id="boot" class="content-pane active">
+        <h2>Boot Configuration</h2>
+        <p style="color:#888; margin-bottom:20px; font-size:14px;">Drag and drop support unavailable. Use controls to reorder devices.</p>
+        
+        <ul class="boot-list" id="bootList">
+          <li class="boot-item" onclick="selectItem(this)">
+            <span class="boot-rank">1</span>
+            <span class="boot-name"><i class="fa-solid fa-hard-drive"></i> HDD: WDC WD10EZEX</span>
+          </li>
+          <li class="boot-item" onclick="selectItem(this)">
+            <span class="boot-rank">2</span>
+            <span class="boot-name"><i class="fa-solid fa-compact-disc"></i> CD/DVD: HL-DT-ST</span>
+          </li>
+          <li class="boot-item" onclick="selectItem(this)">
+            <span class="boot-rank">3</span>
+            <span class="boot-name"><i class="fa-brands fa-usb"></i> USB: Kingston DataTraveler</span>
+          </li>
+          <li class="boot-item" onclick="selectItem(this)">
+            <span class="boot-rank">4</span>
+            <span class="boot-name"><i class="fa-solid fa-network-wired"></i> Network: Realtek PXE</span>
+          </li>
+        </ul>
+
+        <div class="control-bar">
+          <button class="btn" onclick="moveUp()"><i class="fa-solid fa-arrow-up"></i> Move Up</button>
+          <button class="btn" onclick="moveDown()"><i class="fa-solid fa-arrow-down"></i> Move Down</button>
+          <button class="btn btn-danger" onclick="disableDevice()"><i class="fa-solid fa-ban"></i> Enable/Disable</button>
+          <button class="btn" onclick="resetBIOS()"><i class="fa-solid fa-rotate-right"></i> Default</button>
+        </div>
+
+        <div id="feedback"></div>
+      </div>
+
+      <div id="security" class="content-pane">
+        <h2>Security Settings</h2>
+        <div class="hw-card" style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span>Supervisor Password</span>
+            <span style="color:var(--text-muted)">Not Installed</span>
+          </div>
+        </div>
+        <div class="hw-card">
+          <div style="display:flex; justify-content:space-between;">
+            <span>Secure Boot</span>
+            <span style="color:var(--success)">Enabled</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="exit" class="content-pane">
+        <h2>Exit Menu</h2>
+        <div style="display:flex; gap:20px;">
+          <button class="btn btn-success" style="padding:20px 40px; font-size:16px;" onclick="saveExit()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes & Exit
+          </button>
+          <button class="btn btn-danger" style="padding:20px 40px; font-size:16px;" onclick="location.reload()">
+            <i class="fa-solid fa-xmark"></i> Discard Changes
+          </button>
+        </div>
+        <div id="exitFeedback" style="margin-top:20px; font-weight:bold;"></div>
+      </div>
+
+    </main>
   </div>
-  <div id="feedback"></div>
-</div>
 
-<script>
-const tabs = document.querySelectorAll('.tab');
-const mainTitle = document.querySelector('#main h1');
-const bootList = document.getElementById('bootList');
-let selectedIndex = null;
-let disabledDevices = [];
-
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('feedback').textContent = "";
-    switch(tab.dataset.tab){
-      case 'boot': showBoot(); break;
-      case 'system': showSystem(); break;
-      case 'security': showSecurity(); break;
-      case 'exit': showExit(); break;
-    }
-  });
-});
-
-function showBoot(){
-  mainTitle.textContent = "Boot Priority";
-  bootList.style.display = "block";
-}
-function showSystem(){
-  mainTitle.textContent = "System Information";
-  bootList.style.display = "none";
-  document.getElementById('feedback').innerHTML = `
-    CPU: Intel i5-10400<br>
-    RAM: 16GB DDR4<br>
-    BIOS Version: 1.2.3<br>
-    Boot Mode: UEFI
-  `;
-}
-function showSecurity(){
-  mainTitle.textContent = "Security Settings";
-  bootList.style.display = "none";
-  document.getElementById('feedback').innerHTML = `Supervisor Password: <strong>Disabled</strong>`;
-}
-function showExit(){
-  mainTitle.textContent = "Exit BIOS";
-  bootList.style.display = "none";
-  document.getElementById('feedback').innerHTML = `Exit without saving? Press ESC to discard changes.`;
-}
-
-// Boot device selection
-bootList.addEventListener('click', e => {
-  if(e.target.tagName === "LI"){
-    const lis = bootList.querySelectorAll('li');
-    lis.forEach(li => li.classList.remove('selected'));
-    e.target.classList.add('selected');
-    selectedIndex = Array.from(lis).indexOf(e.target);
-  }
-});
-
-function moveUp(){
-  if(selectedIndex === null || selectedIndex === 0) return;
-  const items = bootList.querySelectorAll('li');
-  bootList.insertBefore(items[selectedIndex], items[selectedIndex-1]);
-  selectedIndex--;
-}
-
-function moveDown(){
-  if(selectedIndex === null) return;
-  const items = bootList.querySelectorAll('li');
-  if(selectedIndex === items.length-1) return;
-  bootList.insertBefore(items[selectedIndex+1], items[selectedIndex]);
-  selectedIndex++;
-}
-
-function disableDevice(){
-  if(selectedIndex === null) return;
-  const items = bootList.querySelectorAll('li');
-  const device = items[selectedIndex];
-  if(disabledDevices.includes(device.textContent)){
-    disabledDevices = disabledDevices.filter(d => d !== device.textContent);
-    device.style.opacity = 1;
-    document.getElementById('feedback').textContent = `${device.textContent} Enabled`;
-  } else {
-    disabledDevices.push(device.textContent);
-    device.style.opacity = 0.4;
-    document.getElementById('feedback').textContent = `${device.textContent} Disabled`;
-  }
-}
-
-function saveExit(){
-  const items = bootList.querySelectorAll('li');
-  const firstDevice = items[0].textContent;
-  if(firstDevice.includes("USB") && !disabledDevices.includes("USB Flash Drive")){
-    document.getElementById('feedback').textContent = "✅ USB is first boot device. Changes saved!";
-  } else {
-    document.getElementById('feedback').textContent = "❌ USB is not first boot device or disabled. Check settings!";
-  }
-}
-
-function resetBIOS(){
-  const lis = bootList.querySelectorAll('li');
-  const names = ["HDD (Hard Disk Drive)", "CD/DVD Drive", "USB Flash Drive", "Network/PXE"];
-  lis.forEach((li,i) => {
-    li.textContent = names[i];
-    li.style.opacity = 1;
-    li.classList.remove('selected');
-  });
-  selectedIndex = null;
-  disabledDevices = [];
-  document.getElementById('feedback').textContent = "";
-}
-</script>
-
-</body>
-</html>
+  <footer>
+    <div class="key-hint"><span>F1</span> Help</div>
+    <div class="key-hint"><span>↑/↓</span> Select</div>
+    <div class="key-hint"><span>F5/F6</span> Change Values</div>
+    <div class="key-hint"><span>F10</span> Save & Exit</div>
+    <div class
