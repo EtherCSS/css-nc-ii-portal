@@ -3,101 +3,152 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COC 4 Maintain and Repair Computer Systems and Networks</title>
-  <link rel="stylesheet" href="style.css">
+  <title>COC 4 - Maintain & Repair Systems</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <style>
+    :root {
+      --primary: #00e6e6; /* Neon Cyan */
+      --primary-dim: rgba(0, 230, 230, 0.1);
+      --bg-dark: #050505;
+      --surface: rgba(20, 20, 20, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    /* --- Base Styles --- */
     body {
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
       line-height: 1.6;
       margin: 0;
       padding: 0;
+      background-image: radial-gradient(circle at 50% 0%, #111 0%, #000 100%);
+      min-height: 100vh;
     }
+
     h1, h2 {
-      color: #00e6e6;
+      color: var(--primary);
+      text-shadow: 0 0 20px rgba(0, 230, 230, 0.2);
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
-    .discussion {
-      max-width: 900px;
-      margin: 100px auto 50px auto;
-      background: rgba(255,255,255,0.05);
-      padding: 20px;
-      border-radius: 10px;
-    }
-    .objective {
-      margin-bottom: 40px;
-    }
-    iframe {
-      display: block;
-      margin: 15px auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
-      width: 100%;
-      height: 500px;
-      border: none;
-    }
-    .download-btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #00e6e6;
-      color: #000;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    .download-btn:hover {
-      background: #00cccc;
-    }
-    html, body {
-      height: 100%;
-      overflow-y: auto;
-    }
+
+    a { text-decoration: none; transition: var(--transition); }
+
+    /* --- Navbar --- */
     .navbar {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
+      top: 0; left: 0; width: 100%;
       z-index: 1000;
-      background: rgba(0,0,0,0.8);
-      padding: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 15px 5%;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-sizing: border-box;
     }
-    .navbar ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      gap: 15px;
+
+    .logo { margin: 0; font-size: 24px; font-weight: 800; color: #fff; }
+    .logo span { color: var(--primary); }
+
+    .menu ul { margin: 0; padding: 0; list-style: none; display: flex; gap: 25px; }
+    .menu a {
+      color: var(--text-muted); font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .navbar a {
-      color: #fff;
-      text-decoration: none;
-    }
-    .navbar a.active {
-      color: #00e6e6;
-    }
+    .menu a:hover, .menu a.active { color: var(--primary); text-shadow: 0 0 10px var(--primary-dim); }
+
     .btn.logout {
-      background: #00e6e6;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+      background: transparent; border: 1px solid var(--surface-border);
+      color: var(--text-muted); padding: 8px 16px; border-radius: 6px;
+      cursor: pointer; font-weight: 600; transition: var(--transition); font-family: inherit;
     }
-    .btn.logout:hover {
-      background: #00cccc;
+    .btn.logout:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-dim); }
+
+    /* --- Main Container --- */
+    .discussion {
+      max-width: 900px;
+      margin: 120px auto 60px auto;
+      padding: 0 20px;
+    }
+
+    .header-block {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeDown 0.8s ease;
+    }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* --- Cards --- */
+    .objective {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 40px;
+      transition: var(--transition);
+      position: relative;
+    }
+    .objective:hover {
+      border-color: rgba(0, 230, 230, 0.4);
+      box-shadow: 0 15px 50px -10px rgba(0,0,0,0.8);
+      transform: translateY(-4px);
+    }
+
+    .objective h2 {
+      margin-top: 0; font-size: 20px;
+      border-left: 4px solid var(--primary); padding-left: 15px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .objective p { color: var(--text-muted); font-size: 15px; margin-bottom: 25px; }
+
+    /* --- Media --- */
+    iframe {
+      display: block; width: 100%; height: 500px;
+      border: 1px solid var(--surface-border); border-radius: 8px;
+      background: #000; margin: 20px 0;
+    }
+
+    /* --- Buttons --- */
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 24px; background: var(--primary); color: #000;
+      border-radius: 8px; text-decoration: none; font-weight: 700;
+      font-size: 14px; transition: var(--transition);
+      box-shadow: 0 4px 15px var(--primary-dim);
+    }
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 230, 230, 0.4);
+      background: #fff;
+    }
+
+    /* --- Mobile --- */
+    @media (max-width: 768px) {
+      .navbar { flex-direction: column; gap: 15px; padding: 15px; }
+      .menu ul { gap: 15px; flex-wrap: wrap; justify-content: center; }
+      iframe { height: 300px; }
+      .discussion { margin-top: 140px; }
     }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
+
+  <nav class="navbar">
     <div class="icon">
-      <h2 class="logo">CSS NC II</h2>
+      <h2 class="logo">CSS <span>NC II</span></h2>
     </div>
     <div class="menu">
       <ul>
@@ -108,120 +159,123 @@
         <li><a href="COC4.html" class="active">COC 4</a></li>
       </ul>
     </div>
-    <button class="btn logout" onclick="logout()">Logout</button>
-  </div>
+    <button class="btn logout" onclick="logout()">Logout <i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+  </nav>
 
-  <!-- Discussion Section -->
   <div class="discussion">
-    <h1>COC 4: Maintain and Repair Computer Systems and Networks</h1>
-    <p>
-      This module provides the knowledge and skills to perform maintenance and repair tasks 
-      on computer systems and networks. Learners will understand preventive maintenance, 
-      diagnostic tools, troubleshooting, and repair techniques. Below are the key topics with 
-      discussion for each.
-    </p>
-       <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
-      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>📥 Download PDF</a>
-      
-
-    <!-- Objective 1 -->
-    <div class="objective">
-      <h2>1. Preventive Maintenance</h2>
-      <p>
-        Preventive maintenance involves regular cleaning, inspection, and updating of computer systems 
-        to avoid breakdowns. This includes dust removal, checking for loose connections, and updating 
-        operating systems and applications.
-    </p>
-        <iframe src="COC4.Preventive-Maintenance.pdf"></iframe>
-      <a href="COC4.Preventive-Maintenance.pdf" class="download-btn" download>📥 Download PDF</a>
-      
+    
+    <div class="header-block">
+      <h1>Maintain & Repair Systems</h1>
+      <p>Module Overview: Preventive maintenance, diagnostics, troubleshooting methodology, and data recovery.</p>
     </div>
 
-    <!-- Objective 2 -->
     <div class="objective">
-      <h2>2. Troubleshooting Methodology</h2>
-      <p>
-        Troubleshooting is a step-by-step process to identify and resolve issues. 
-        It includes problem identification, isolating the cause, testing solutions, 
-        and verifying system functionality.
-      </p>
+      <h2><i class="fa-solid fa-book-open"></i> Maintenance Procedures</h2>
+      <p>Overview of standard operating procedures for maintaining computer systems health and performance.</p>
+      
+      
+
+      <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
+      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Guide
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-broom"></i> 1. Preventive Maintenance</h2>
+      <p>Techniques for regular cleaning, dust removal, inspection of loose connections, and system updates to prevent hardware failure.</p>
+      
+      
+
+      <iframe src="COC4.Preventive-Maintenance.pdf"></iframe>
+      <a href="COC4.Preventive-Maintenance.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Guide
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-magnifying-glass-chart"></i> 2. Troubleshooting Methodology</h2>
+      <p>The systematic approach to problem-solving: Identification, Isolation, Resolution, and Verification.</p>
+      
+      
+
       <iframe src="COC4.Driver Issues.pdf"></iframe>
-      <a href="COC4.Driver Issues.pdf" class="download-btn" download>📥 Download PDF</a>
-      </p>
+      <a href="COC4.Driver Issues.pdf" class="download-btn" style="margin-bottom:20px" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Drivers Guide
+      </a>
+
       <iframe src="COC4.Troubleshooting.pdf"></iframe>
-      <a href="COC4.Troubleshooting.pdf" class="download-btn" download>📥 Download PDF</a>
+      <a href="COC4.Troubleshooting.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Methodology
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-microchip"></i> 3. Common Hardware Issues</h2>
+      <p>Diagnosing faulty RAM, overheating CPUs, power supply failures, and peripheral damage.</p>
+      
+      
+
+      <iframe src="COC4.Common-Hardware-Issues.pdf"></iframe>
+      <a href="COC4.Common-Hardware-Issues.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Guide
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-compact-disc"></i> 4. Software & Driver Issues</h2>
+      <p>Managing outdated drivers, resolving conflicts, and fixing OS corruption using recovery tools.</p>
+      
+      
+
+      <iframe src="COC4.Driver Issues.pdf"></iframe>
+      <a href="COC4.Driver Issues.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Guide
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-network-wired"></i> 5. Network Troubleshooting</h2>
+      <p>Diagnosing IP conflicts, connectivity drops, and physical cabling issues using tools like Ping and IPConfig.</p>
+      
+      
+      
+      <div style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; text-align: center; color: var(--text-muted); border: 1px dashed var(--surface-border);">
+        <i class="fa-solid fa-info-circle"></i> Practical demonstration required for this module.
+      </div>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-floppy-disk"></i> 6. Data Backup & Recovery</h2>
+      <p>Essential strategies for cloning drives, creating system restore points, and recovering lost files.</p>
+      
+      
+
+      <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
+      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>
+        <i class="fa-solid fa-file-pdf"></i> Download Guide
+      </a>
+    </div>
+
+    <div class="objective">
+      <h2><i class="fa-solid fa-triangle-exclamation"></i> 7. Safety & ESD Precautions</h2>
+      <p>Importance of grounding (Anti-static wrist straps) and OHS procedures to prevent component damage and injury.</p>
+      
       
     </div>
 
-    <!-- Objective 3 -->
     <div class="objective">
-      <h2>3. Common Hardware Issues</h2>
-      <p>
-        <iframe src="COC4.Common-Hardware-Issues.pdf"></iframe>
-      <a href="COC4.Common-Hardware-Issues.pdf" class="download-btn" download>📥 Download PDF</a>
+      <h2><i class="fa-solid fa-clipboard-check"></i> 8. Documentation</h2>
+      <p>Recording maintenance logs, technical reports, and inventory management for future reference.</p>
       
-        Hardware issues such as faulty RAM, overheating CPUs, power supply failures, 
-        or damaged cables are identified and resolved using diagnostic tools and replacement techniques.
-      </p>
       
     </div>
 
-    <!-- Objective 4 -->
-    <div class="objective">
-      <h2>4. Software and Driver Issues</h2>
-      <p>
-        Outdated or corrupted drivers can cause malfunctions. Technicians must be able to update, 
-        reinstall, or roll back drivers, as well as handle OS corruption using repair tools.
-      </p>
-     <iframe src="COC4.Driver Issues.pdf"></iframe>
-      <a href="COC4.Driver Issues.pdf" class="download-btn" download>📥 Download PDF</a>
-      
-    </div>
-
-    <!-- Objective 5 -->
-    <div class="objective">
-      <h2>5. Network Troubleshooting</h2>
-      <p>
-        Networking issues include IP conflicts, slow connectivity, router misconfigurations, 
-        or damaged cables. Tools like <code>ping</code>, <code>ipconfig</code>, and network testers 
-        are used to diagnose and fix these problems.
-      </p>
-    </div>
-
-    <!-- Objective 6 -->
-    <div class="objective">
-      <h2>6. Data Backup and Recovery</h2>
-      <p>
-         <iframe src="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf"></iframe>
-      <a href="COC.4Computer-Systems-Maintenance-Procedure-Keeping-Your-Tech-Running-Smoothly.pdf" class="download-btn" download>📥 Download PDF</a>
-      
-    </div>
-        Backing up data ensures that files are safe in case of hardware or software failure. 
-        Recovery techniques include system restore points, cloning, and using recovery software.
-      </p>
-    </div>
-
-    <!-- Objective 7 -->
-    <div class="objective">
-      <h2>7. Safety and ESD Precautions</h2>
-      <p>
-        Proper handling of computer components requires grounding methods and ESD (Electrostatic Discharge) 
-        protection to prevent component damage during maintenance and repair.
-      </p>
-    </div>
-
-    <!-- Objective 8 -->
-    <div class="objective">
-      <h2>8. Documentation and Reporting</h2>
-      <p>
-        Recording maintenance and repair activities is crucial. Reports include system issues, 
-        solutions applied, and recommendations for future maintenance.
-      </p>
-    </div>
   </div>
 
   <script>
     function logout() {
+      // Clear session logic here if needed
       window.location.href = "index.html";
     }
   </script>

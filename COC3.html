@@ -4,178 +4,276 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>COC 3 - Set Up Server</title>
-  <link rel="stylesheet" href="style.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
   <style>
+    :root {
+      --primary: #00e6e6; /* Neon Cyan */
+      --primary-dim: rgba(0, 230, 230, 0.1);
+      --bg-dark: #050505;
+      --surface: rgba(20, 20, 20, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    /* --- Base Styles --- */
     body {
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
       line-height: 1.6;
       margin: 0;
       padding: 0;
+      background-image: radial-gradient(circle at 50% 0%, #111 0%, #000 100%);
+      min-height: 100vh;
     }
+
     h1, h2 {
-      color: #00e6e6;
+      color: var(--primary);
+      text-shadow: 0 0 20px rgba(0, 230, 230, 0.2);
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
-    .discussion {
-      max-width: 900px;
-      margin: 100px auto 50px auto;
-      background: rgba(255,255,255,0.05);
-      padding: 20px;
-      border-radius: 10px;
-    }
-    .objective {
-      margin-bottom: 40px;
-    }
-    img, iframe {
-      display: block;
-      margin: 15px auto;
-      max-width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 230, 230, 0.7);
-    }
-    iframe { 
-      width: 100%;
-      height: 500px;
-    }
-    .download-btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #00e6e6;
-      color: #000;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    .download-btn:hover {
-      background: #00cccc;
-    }
-    html, body {
-      height: 100%;
-      overflow-y: auto;
-    }
+
+    a { text-decoration: none; transition: var(--transition); }
+
+    /* --- Navbar --- */
     .navbar {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
+      top: 0; left: 0; width: 100%;
       z-index: 1000;
-      background: rgba(0,0,0,0.8);
-      padding: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 15px 5%;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-sizing: border-box;
     }
-    .navbar ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: flex;
-      gap: 15px;
+
+    .logo { margin: 0; font-size: 24px; font-weight: 800; color: #fff; }
+    .logo span { color: var(--primary); }
+
+    .menu ul { margin: 0; padding: 0; list-style: none; display: flex; gap: 25px; }
+    .menu a {
+      color: var(--text-muted); font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .navbar a {
-      color: #fff;
-      text-decoration: none;
-    }
-    .navbar a.active {
-      color: #00e6e6;
-    }
+    .menu a:hover, .menu a.active { color: var(--primary); text-shadow: 0 0 10px var(--primary-dim); }
+
     .btn.logout {
-      background: #00e6e6;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+      background: transparent; border: 1px solid var(--surface-border);
+      color: var(--text-muted); padding: 8px 16px; border-radius: 6px;
+      cursor: pointer; font-weight: 600; transition: var(--transition); font-family: inherit;
     }
-    .btn.logout:hover {
-      background: #00cccc;
+    .btn.logout:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-dim); }
+
+    /* --- Main Container --- */
+    .discussion {
+      max-width: 900px;
+      margin: 120px auto 60px auto;
+      padding: 0 20px;
     }
+
+    .header-block {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeDown 0.8s ease;
+    }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* --- Video Cards --- */
+    .objective {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 40px;
+      transition: var(--transition);
+      position: relative;
+    }
+    .objective:hover {
+      border-color: rgba(0, 230, 230, 0.4);
+      box-shadow: 0 15px 50px -10px rgba(0,0,0,0.8);
+      transform: translateY(-4px);
+    }
+
+    .objective h2 {
+      margin-top: 0; font-size: 20px;
+      border-left: 4px solid var(--primary); padding-left: 15px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
     .video-description {
-      color: #c7cbd0;
-      margin-top: 10px;
-      font-size: 14px;
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 15px;
+      border-left: 2px solid var(--surface-border);
+      padding-left: 15px;
+    }
+
+    /* --- Responsive Video --- */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+      background: #000;
+      margin-top: 20px;
+    }
+    .video-container iframe {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+    }
+
+    /* --- Buttons --- */
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-top: 20px;
+      padding: 12px 24px; background: var(--primary); color: #000;
+      border-radius: 8px; text-decoration: none; font-weight: 700;
+      font-size: 14px; transition: var(--transition);
+      box-shadow: 0 4px 15px var(--primary-dim);
+    }
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 230, 230, 0.4);
+      background: #fff;
+    }
+
+    /* --- Image Placeholder (for diagrams) --- */
+    .diagram-note {
+      font-size: 12px; color: var(--primary); margin-bottom: 15px; display: block; opacity: 0.8;
+    }
+
+    /* --- Mobile --- */
+    @media (max-width: 768px) {
+      .navbar { flex-direction: column; gap: 15px; padding: 15px; }
+      .menu ul { gap: 15px; flex-wrap: wrap; justify-content: center; }
+      .discussion { margin-top: 140px; }
     }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
+
+  <nav class="navbar">
     <div class="icon">
-      <h2 class="logo">CSS NC II</h2>
+      <h2 class="logo">CSS <span>NC II</span></h2>
     </div>
     <div class="menu">
       <ul>
         <li><a href="dashboard.html">HOME</a></li>
-        <li><a href="COC1. Bootable-Devices.pdf">COC 1</a></li>
+        <li><a href="COC1.html">COC 1</a></li>
         <li><a href="COC2.html">COC 2</a></li>
         <li><a href="COC3.html" class="active">COC 3</a></li>
         <li><a href="COC4.html">COC 4</a></li>
       </ul>
     </div>
-    <button class="btn logout" onclick="logout()">Logout</button>
-  </div>
+    <button class="btn logout" onclick="logout()">Logout <i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+  </nav>
 
-  <!-- Discussion Section -->
   <div class="discussion">
-    <h1>COC 3: Set Up Server</h1>
-    <p>
-      This module covers setting up servers and essential server management.  
-      Below are tutorials and demonstrations to guide learners through installation, configuration, and testing of servers.
-    </p>
+    
+    <div class="header-block">
+      <h1>Set Up Servers</h1>
+      <p>Module Overview: Installation, configuration, network settings, and security management for Windows Servers.</p>
+    </div>
 
-    <!-- Video 1 -->
     <div class="objective">
-      <h2>COC3: Server Setup Tutorial 1</h2>
-      <iframe src="https://www.youtube.com/embed/Rm3EUW59Pbw" allowfullscreen></iframe>
+      <h2><i class="fa-solid fa-server"></i> Server Setup: Installation</h2>
+      
+      
+
+[Image of server rack hardware]
+
+
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/Rm3EUW59Pbw" allowfullscreen></iframe>
+      </div>
       <p class="video-description">
-        This video introduces basic server setup, including selecting server hardware, installing the operating system, and performing initial configuration.
+        <strong>Topic 1:</strong> Introduction to server hardware selection, OS installation (Windows Server), and initial post-installation configuration steps.
       </p>
-      <a href="https://www.youtube.com/watch?v=Rm3EUW59Pbw" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+      <a href="https://www.youtube.com/watch?v=Rm3EUW59Pbw" class="download-btn" target="_blank">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
     </div>
 
-    <!-- Video 2 -->
     <div class="objective">
-      <h2>COC3: Server Setup Tutorial 2</h2>
-      <iframe src="https://www.youtube.com/embed/-AYNeGB2j1w" allowfullscreen></iframe>
+      <h2><i class="fa-solid fa-network-wired"></i> Network Configuration</h2>
+      
+      
+
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/-AYNeGB2j1w" allowfullscreen></iframe>
+      </div>
       <p class="video-description">
-        Demonstrates network configuration for the server, assigning IP addresses, connecting to local networks, and ensuring server accessibility.
+        <strong>Topic 2:</strong> Assigning static IP addresses, configuring DNS settings, and connecting the server to the local area network (LAN).
       </p>
-      <a href="https://www.youtube.com/watch?v=-AYNeGB2j1w" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+      <a href="https://www.youtube.com/watch?v=-AYNeGB2j1w" class="download-btn" target="_blank">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
     </div>
 
-    <!-- Video 3 -->
     <div class="objective">
-      <h2>COC3: Server Setup Tutorial 3</h2>
-      <iframe src="https://www.youtube.com/embed/wEVD6GakHlI" allowfullscreen></iframe>
+      <h2><i class="fa-solid fa-layer-group"></i> Roles & Features</h2>
+      
+      
+
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/wEVD6GakHlI" allowfullscreen></iframe>
+      </div>
       <p class="video-description">
-        Covers installing essential server roles and features, including file sharing, web hosting, and database services. 
+        <strong>Topic 3:</strong> Installing key roles such as Active Directory, DHCP, File Services, and Web Server (IIS).
       </p>
-      <a href="https://www.youtube.com/watch?v=wEVD6GakHlI" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+      <a href="https://www.youtube.com/watch?v=wEVD6GakHlI" class="download-btn" target="_blank">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
     </div>
 
-    <!-- Video 4 -->
     <div class="objective">
-      <h2>COC3: Server Setup Tutorial 4</h2>
-      <iframe src="https://www.youtube.com/embed/meVlld_NOow" allowfullscreen></iframe>
+      <h2><i class="fa-solid fa-shield-halved"></i> Security & Maintenance</h2>
+      
+      
+
+[Image of network security firewall diagram]
+
+
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/meVlld_NOow" allowfullscreen></iframe>
+      </div>
       <p class="video-description">
-        Explains server security, backup procedures, and monitoring. 
+        <strong>Topic 4:</strong> Best practices for server security, configuring firewalls, setting up backups, and performance monitoring.
       </p>
-      <a href="https://www.youtube.com/watch?v=meVlld_NOow" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+      <a href="https://www.youtube.com/watch?v=meVlld_NOow" class="download-btn" target="_blank">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
     </div>
 
-    <!-- Static IP Section -->
     <div class="objective">
-      <h2>COC3: Setting Static IP Address</h2>
-      <p>
-        Learn how to configure a static IP address on Windows Server 2008 R2 using the Command Prompt. 
-        This step is crucial for ensuring consistent network communication.
+      <h2><i class="fa-solid fa-terminal"></i> Command Line Configuration</h2>
+      
+      
+
+      <div class="video-container">
+        <iframe src="https://www.youtube.com/embed/JPbvWujq2hY" allowfullscreen></iframe>
+      </div>
+      <p class="video-description">
+        <strong>Tutorial:</strong> How to manually configure a Static IP Address using the Command Prompt (cmd) on Windows Server 2008 R2.
       </p>
-      <iframe src="https://www.youtube.com/embed/JPbvWujq2hY" allowfullscreen></iframe>
-      <a href="https://www.youtube.com/watch?v=JPbvWujq2hY" class="download-btn" target="_blank">📥 Watch on YouTube</a>
+      <a href="https://www.youtube.com/watch?v=JPbvWujq2hY" class="download-btn" target="_blank">
+        <i class="fa-brands fa-youtube"></i> Watch on YouTube
+      </a>
     </div>
+
   </div>
 
   <script>
@@ -188,7 +286,7 @@
 
     // --- Logout function ---
     function logout() {
-      localStorage.removeItem('css_session'); // clear session
+      localStorage.removeItem('css_session');
       window.location.href = 'index.html';
     }
   </script>
