@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rib AI</title>
+<style>
+:root {
+  --red: #ff2b2b;
+  --dark: #020202;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at center, #050505, #000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Orbitron, Arial;
+  color: var(--red);
+  overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,0,0,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+#hud {
+  position: relative;
+  width: 320px;
+  height: 320px;
+}
+
+.ring.outer {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--red);
+  border-radius: 50%;
+  animation: spin 20s linear infinite;
+}
+
+.ring.middle {
+  position: absolute;
+  inset: 30px;
+  border: 2px dashed var(--red);
+  border-radius: 50%;
+  animation: spinReverse 14s linear infinite;
+}
+
+#core {
+  position: absolute;
+  inset: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--red) 20%, transparent 70%);
+  box-shadow: 0 0 30px var(--red);
+  transition: 0.2s;
+}
+
+.speaking #core {
+  transform: scale(1.2);
+  box-shadow: 0 0 60px var(--red);
+}
+
+#label {
+  position: absolute;
+  width: 100%;
+  bottom: -50px;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div class="ring outer"></div>
+  <div class="ring middle"></div>
+  <div id="core"></div>
+  <div id="label">RIB AI ONLINE</div>
+</div>
+
+<script>
+const hud = document.getElementById("hud");
+const label = document.getElementById("label");
+
+function speak(text) {
+  hud.classList.add("speaking");
+  label.textContent = "PROCESSING";
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.onend = () => {
+    hud.classList.remove("speaking");
+    label.textContent = "AI ONLINE";
+  };
+  speechSynthesis.speak(u);
+}
+
+/* ====== LOCAL PPT CONTROL ====== */
+async function controlLocalPPT(command) {
+  try {
+    const response = await fetch("http://localhost:5000/ppt", { // adjust to your Flask server
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command })
+    });
+    const data = await response.json();
+    console.log("PPT Response:", data);
+
+    if(data.status === "error") {
+      speak("PowerPoint error: " + data.action);
+    }
+  } catch (err) {
+    console.error("Cannot reach local PPT server:", err);
+    speak("Cannot control local PowerPoint. Make sure Python server is running.");
+  }
+}
+
+/* ====== SPEECH RECOGNITION ====== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recog = new SR();
+recog.lang = "en-US";
+recog.continuous = true;
+
+let lastTab = null;
+
+function handleCommand(text) {
+  text = text.toLowerCase();
+  label.textContent = text.toUpperCase();
+
+  // ----- OPEN WEBSITES (instant) -----
+  if(text.includes("open google")) { 
+    window.open("https://google.com","_blank"); 
+    speak("Opening Google"); 
+    return; 
+  }
+  if(text.includes("open youtube")) { 
+    window.open("https://youtube.com","_blank"); 
+    speak("Opening YouTube"); 
+    return; 
+  }
+  if(text.includes("open facebook")) { 
+    window.open("https://facebook.com","_blank"); 
+    speak("Opening Facebook"); 
+    return; 
+  }
+
+  // ----- GOOGLE SEARCH (instant) -----
+  if(
+    text.startsWith("search for ") || text.startsWith("search ") || text.startsWith("google ") ||
+    text.startsWith("what is ") || text.startsWith("what are ") || text.startsWith("find ") ||
+    text.startsWith("look up ") || text.startsWith("tell me about ")
+  ){
+    let query = text.replace(/search for |search |google |what is |what are |find |look up |tell me about /, "").trim();
+    if(query.length > 0) {
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+      speak(`Searching Google for ${query}`);
+    } else speak("Please say the topic you want to search.");
+    return;
+  }
+
+  // ----- LOCAL PPT COMMANDS -----
+  if(text.includes("open presentation") || text.includes("start presentation") || text.includes("open innov") || text.includes("open powerpoint")) {
+    speak("Opening local presentation");
+    controlLocalPPT("open presentation");
+    return;
+  }
+
+  if(text.includes("next slide") || text === "next" || text.includes("forward")) {
+    speak("Next slide");
+    controlLocalPPT("next");
+    return;
+  }
+
+  if(text.includes("previous slide") || text.includes("back") || text.includes("go back")) {
+    speak("Previous slide");
+    controlLocalPPT("back");
+    return;
+  }
+
+  if(text.includes("end presentation") || text.includes("close presentation")) {
+    speak("Ending presentation");
+    controlLocalPPT("end");
+    return;
+  }
+
+  // ----- CLOSE TAB -----
+  if(text.includes("close tab")) {
+    if(lastTab && !lastTab.closed) { lastTab.close(); lastTab = null; speak("Closing tab"); } 
+    else speak("No active tab");
+    return;
+  }
+
+  speak("Command received");
+}
+
+recog.onresult = e => {
+  const transcript = e.results[e.results.length - 1][0].transcript;
+  handleCommand(transcript);
+};
+
+recog.onend = () => recog.start();
+
+recog.start();
+speak("Rib AI initialized. Systems online.");
+</script>
+
+</body>
+</html>
