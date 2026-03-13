@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RJ45 Wiring Lab • Hand Control</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #07090f;
+      --bg2: #0e1320;
+      --panel: rgba(20, 24, 36, 0.72);
+      --line: rgba(255,255,255,0.08);
+      --text: #eef2ff;
+      --muted: #a8b0c7;
+      --accent: #ff9f1a;
+      --accent-2: #57d8ff;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 16px;
+      --shadow: 0 20px 40px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(900px 400px at 50% -10%, rgba(255,159,26,0.10), transparent 55%),
+        radial-gradient(700px 300px at 85% 20%, rgba(87,216,255,0.08), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      overflow: hidden;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+      position: relative;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 9, 15, 0.65);
+      backdrop-filter: blur(10px);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 5;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: .2px;
+    }
+
+    .title-wrap h1 i {
+      color: var(--accent);
+      filter: drop-shadow(0 0 10px rgba(255,159,26,.35));
+    }
+
+    .title-wrap p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .header-pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 240px 1fr 360px;
+      gap: 14px;
+      padding: 14px;
+      min-height: 0;
+      position: relative;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      min-height: 0;
+    }
+
+    .toolbox {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: auto;
+    }
+
+    .section-title {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .wire-source {
+      height: 36px;
+      border-radius: 10px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.18);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      user-select: none;
+      text-shadow: 0 1px 2px rgba(0,0,0,.65);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .wire-source:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 8px 20px rgba(0,0,0,.18);
+    }
+
+    .wire-source:active { cursor: grabbing; transform: scale(0.98); }
+
+    .wire-source.hand-selected {
+      outline: 2px solid rgba(87,216,255,.55);
+      box-shadow: 0 0 0 4px rgba(87,216,255,.12), 0 10px 24px rgba(0,0,0,.25);
+    }
+
+    /* Wire colors */
+    .w-orange { background: #ff9f1a; color: #171717; text-shadow: none; }
+    .w-orange-white { background: repeating-linear-gradient(90deg, #fff 0 5px, #ff9f1a 5px 10px); color: #171717; text-shadow: none; }
+
+    .w-green { background: #2ecc71; color: #171717; text-shadow: none; }
+    .w-green-white { background: repeating-linear-gradient(90deg, #fff 0 5px, #2ecc71 5px 10px); color: #171717; text-shadow: none; }
+
+    .w-blue { background: #3498db; }
+    .w-blue-white { background: repeating-linear-gradient(90deg, #fff 0 5px, #3498db 5px 10px); color: #171717; text-shadow: none; }
+
+    .w-brown { background: #a0522d; }
+    .w-brown-white { background: repeating-linear-gradient(90deg, #fff 0 5px, #a0522d 5px 10px); color: #171717; text-shadow: none; }
+
+    .legend {
+      margin-top: 2px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .main-lab {
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .lab-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .lab-head .meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .preset-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .16s ease;
+    }
+
+    .chip-btn:hover,
+    .chip-btn.hand-hover {
+      border-color: rgba(87,216,255,.35);
+      background: rgba(87,216,255,.06);
+    }
+
+    .crimping-zone {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-content: start;
+      min-height: 0;
+    }
+
+    .connector-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .connector-label {
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .rj45-plug {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px 14px 6px 6px;
+      padding: 10px;
+      width: 100%;
+      height: 290px;
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 16px 28px rgba(0,0,0,0.22);
+      backdrop-filter: blur(8px);
+    }
+
+    .gold-pins {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      right: 10px;
+      height: 34px;
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .pin-metal {
+      flex: 1;
+      max-width: 16px;
+      background: linear-gradient(to bottom, #ffd700, #b8860b);
+      border-radius: 3px;
+      box-shadow: 0 0 8px rgba(255,215,0,.12);
+    }
+
+    .slots-container {
+      margin-top: 44px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      height: 210px;
+    }
+
+    .slot {
+      background: rgba(0,0,0,0.35);
+      border: 1px dashed rgba(255,255,255,.16);
+      border-radius: 8px;
+      position: relative;
+      transition: .16s ease;
+      overflow: visible;
+    }
+
+    .slot.active {
+      border-color: rgba(255,159,26,.65);
+      background: rgba(255,159,26,0.08);
+      box-shadow: 0 0 0 3px rgba(255,159,26,0.08);
+    }
+
+    .slot.hand-target {
+      border-color: rgba(87,216,255,.75);
+      background: rgba(87,216,255,.08);
+      box-shadow: 0 0 0 3px rgba(87,216,255,.10);
+    }
+
+    .inserted-wire {
+      width: 100%;
+      height: 100%;
+      border-radius: 7px;
+    }
+
+    .pin-number {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      opacity: 0.9;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      transition: .18s ease;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover,
+    button.hand-hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.20);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .btn-check {
+      background: linear-gradient(135deg, rgba(255,159,26,.23), rgba(255,159,26,.10));
+      border-color: rgba(255,159,26,.35);
+      color: #ffe9c7;
+    }
+
+    .btn-check:hover,
+    .btn-check.hand-hover {
+      border-color: rgba(255,159,26,.55);
+      box-shadow: 0 0 0 4px rgba(255,159,26,.08);
+    }
+
+    .btn-reset {
+      background: rgba(255,255,255,.03);
+    }
+
+    .feedback-box {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-align: center;
+      min-height: 44px;
+      display: none;
+      border: 1px solid transparent;
+      line-height: 1.35;
+      font-size: 13px;
+    }
+
+    .feedback-success {
+      display: block;
+      background: rgba(16,185,129,.08);
+      border-color: rgba(16,185,129,.35);
+      color: #b9ffe1;
+    }
+
+    .feedback-error {
+      display: block;
+      background: rgba(239,68,68,.08);
+      border-color: rgba(239,68,68,.30);
+      color: #ffd1d1;
+    }
+
+    .side-panel {
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 12px;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .box h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .cam-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #090d17;
+      margin-bottom: 10px;
+    }
+
+    video#webcam, canvas#camOverlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .cam-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(4px);
+    }
+
+    .status {
+      min-height: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status.good { color: #b7ffd2; }
+    .status.warn { color: #ffd3a8; }
+    .status.bad  { color: #ffb7b7; }
+
+    .hand-help {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .mini-code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: #c9d1ff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--line);
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    /* Hand cursor */
+    .hand-cursor {
+      position: fixed;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.9);
+      background: rgba(87,216,255,.25);
+      box-shadow: 0 0 18px rgba(87,216,255,.45);
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .14s ease;
+    }
+    .hand-cursor.show { opacity: 1; }
+    .hand-cursor.pinching {
+      width: 24px;
+      height: 24px;
+      background: rgba(255,159,26,.25);
+      box-shadow: 0 0 22px rgba(255,159,26,.45);
+    }
+    .hand-cursor::after {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border-radius: inherit;
+      background: rgba(255,255,255,.75);
+    }
+
+    /* Continuous drag ghost + trail */
+    .hand-wire-ghost {
+      position: fixed;
+      width: 120px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 24px rgba(0,0,0,.25), 0 0 0 2px rgba(87,216,255,.08);
+      pointer-events: none;
+      z-index: 10001;
+      opacity: 0;
+      transform: translate(-8px, -10px) rotate(-8deg);
+      transition: opacity .12s ease;
+    }
+    .hand-wire-ghost.show { opacity: 0.95; }
+
+    .hand-drag-trail {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity .12s ease;
+    }
+    .hand-drag-trail.show { opacity: 1; }
+
+    .hand-drag-trail path {
+      fill: none;
+      stroke: rgba(87,216,255,0.8);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px rgba(87,216,255,.35));
+      stroke-dasharray: 7 8;
+      animation: trailDash 0.9s linear infinite;
+    }
+    @keyframes trailDash {
+      to { stroke-dashoffset: -30; }
+    }
+
+    .hand-drag-anchor {
+      fill: rgba(255,159,26,.85);
+      filter: drop-shadow(0 0 8px rgba(255,159,26,.35));
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1200px) {
+      .workspace { grid-template-columns: 220px 1fr 320px; }
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .shell { height: auto; min-height: 100%; }
+      .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+      .crimping-zone { grid-template-columns: 1fr; }
+      .rj45-plug { height: 250px; }
+      .slots-container { height: 170px; }
+      .toolbox {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .toolbox .section-title,
+      .toolbox .legend {
+        grid-column: 1 / -1;
+      }
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="title-wrap">
+        <h1><i class="fa-solid fa-network-wired"></i> RJ45 Wiring Lab • Hand Control</h1>
+        <p>Mouse drag or camera hand pinch to wire T568A, T568B, and Crossover cables.</p>
+      </div>
+      <div class="header-pill">Pinch + hold on wire → drag → release on slot</div>
+    </header>
+
+    <main class="workspace" id="workspace">
+      <!-- LEFT: WIRE TOOLBOX -->
+      <aside class="panel toolbox">
+        <h3 class="section-title">Wire Spool</h3>
+
+        <div class="wire-source w-orange-white" draggable="true" data-color="OW">Orange/White</div>
+        <div class="wire-source w-orange" draggable="true" data-color="O">Orange</div>
+        <div class="wire-source w-green-white" draggable="true" data-color="GW">Green/White</div>
+        <div class="wire-source w-blue" draggable="true" data-color="B">Blue</div>
+        <div class="wire-source w-blue-white" draggable="true" data-color="BW">Blue/White</div>
+        <div class="wire-source w-green" draggable="true" data-color="G">Green</div>
+        <div class="wire-source w-brown-white" draggable="true" data-color="BrW">Brown/White</div>
+        <div class="wire-source w-brown" draggable="true" data-color="Br">Brown</div>
+
+        <div class="legend">
+          <b>Mouse:</b> drag wire → drop slot<br>
+          <b>Hand:</b> pinch & hold on wire → move → release on slot<br>
+          <b>Move existing:</b> pinch & hold on a filled slot<br>
+          <b>Clear slot:</b> double-click (mouse) or tap/pinch on empty/fill slot without dragging
+        </div>
+      </aside>
+
+      <!-- CENTER: LAB -->
+      <section class="panel main-lab">
+        <div class="lab-head">
+          <div>
+            <div style="font-weight:800; font-size:15px;">Crimping Workspace</div>
+            <div class="meta">Pin numbers are shown below each slot (1–8).</div>
+          </div>
+
+          <div class="preset-row">
+            <button class="chip-btn" id="fillBBtn">Auto Fill T568B</button>
+            <button class="chip-btn" id="fillABtn">Auto Fill T568A</button>
+            <button class="chip-btn" id="fillCrossBtn">Auto Fill Crossover</button>
+          </div>
+        </div>
+
+        <div class="crimping-zone" id="crimpingZone">
+          <div class="connector-wrapper">
+            <div class="connector-label">Left Connector (End A)</div>
+            <div class="rj45-plug">
+              <div class="gold-pins">
+                <div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div>
+                <div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div>
+              </div>
+              <div class="slots-container" id="left-slots"></div>
+            </div>
+          </div>
+
+          <div class="connector-wrapper">
+            <div class="connector-label">Right Connector (End B)</div>
+            <div class="rj45-plug">
+              <div class="gold-pins">
+                <div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div>
+                <div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div><div class="pin-metal"></div>
+              </div>
+              <div class="slots-container" id="right-slots"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="btn-row">
+            <button class="btn-check" id="checkBtn"><i class="fa-solid fa-check"></i> Crimp &amp; Test</button>
+            <button class="btn-reset" id="resetBtn"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+          </div>
+          <div id="feedback" class="feedback-box"></div>
+        </div>
+      </section>
+
+      <!-- RIGHT: CAMERA / HAND CONTROL -->
+      <aside class="panel side-panel">
+        <div class="box">
+          <h3>Camera Hand Control</h3>
+          <p>Use your camera to control the RJ45 simulator. Works best with one hand visible and good lighting.</p>
+        </div>
+
+        <div class="box">
+          <div class="cam-wrap">
+            <video id="webcam" autoplay playsinline muted></video>
+            <canvas id="camOverlay"></canvas>
+            <div class="cam-badge" id="camBadge">Camera: OFF</div>
+          </div>
+
+          <div class="btn-row">
+            <button id="startCamBtn"><i class="fa-solid fa-video"></i> Start Camera</button>
+            <button id="stopCamBtn"><i class="fa-solid fa-video-slash"></i> Stop Camera</button>
+          </div>
+
+          <div class="status warn" id="camStatus">Hand tracking not started.</div>
+        </div>
+
+        <div class="box">
+          <h3>Gesture Guide</h3>
+          <div class="hand-help">
+            <div>• Move <b>index fingertip</b> to control cursor</div>
+            <div>• <b>Pinch + hold</b> on a wire to drag continuously</div>
+            <div>• Release pinch on a slot to drop wire</div>
+            <div>• Pinch on a filled slot to move that wire to another slot</div>
+            <div>• Pinch on buttons to click them</div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3>Standards</h3>
+          <div class="mini-code">T568B = OW O GW B BW G BrW Br
+T568A = GW G OW B BW O BrW Br
+
+PASS:
+• Straight-through (A-A or B-B)
+• Crossover (A-B / B-A)</div>
+          <div class="footer-note" style="margin-top:8px;">
+            If camera permission is blocked, run the file on a local server (e.g., VS Code Live Server / localhost).
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Hand cursor + continuous drag visuals -->
+  <div class="hand-cursor" id="handCursor"></div>
+
+  <svg class="hand-drag-trail" id="handDragTrail" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path id="handDragTrailPath" d=""></path>
+    <circle id="handDragAnchor" class="hand-drag-anchor" cx="0" cy="0" r="5"></circle>
+  </svg>
+
+  <div class="hand-wire-ghost" id="handWireGhost"></div>
+
+  <script type="module">
+    import {
+      HandLandmarker,
+      FilesetResolver
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+
+    // ----------------------------
+    // Data Definitions
+    // ----------------------------
+    const wireData = {
+      OW:  { class: "w-orange-white", name: "Orange/White" },
+      O:   { class: "w-orange", name: "Orange" },
+      GW:  { class: "w-green-white", name: "Green/White" },
+      B:   { class: "w-blue", name: "Blue" },
+      BW:  { class: "w-blue-white", name: "Blue/White" },
+      G:   { class: "w-green", name: "Green" },
+      BrW: { class: "w-brown-white", name: "Brown/White" },
+      Br:  { class: "w-brown", name: "Brown" }
+    };
+
+    const T568B = ["OW", "O", "GW", "B", "BW", "G", "BrW", "Br"];
+    const T568A = ["GW", "G", "OW", "B", "BW", "O", "BrW", "Br"];
+
+    let leftWires = new Array(8).fill(null);
+    let rightWires = new Array(8).fill(null);
+
+    const leftContainer = document.getElementById("left-slots");
+    const rightContainer = document.getElementById("right-slots");
+    const feedbackEl = document.getElementById("feedback");
+    const workspaceEl = document.getElementById("workspace");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const fillBBtn = document.getElementById("fillBBtn");
+    const fillABtn = document.getElementById("fillABtn");
+    const fillCrossBtn = document.getElementById("fillCrossBtn");
+
+    // ----------------------------
+    // Slot / Mouse Drag Logic
+    // ----------------------------
+    function createSlots(container, sideArray, sideName) {
+      container.innerHTML = "";
+
+      for (let i = 0; i < 8; i++) {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.dataset.side = sideName;
+        slot.dataset.index = String(i);
+        slot.innerHTML = `<span class="pin-number">${i + 1}</span>`;
+
+        slot.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          slot.classList.add("active");
+          e.dataTransfer.dropEffect = "copy";
+        });
+
+        slot.addEventListener("dragleave", () => {
+          slot.classList.remove("active");
+        });
+
+        slot.addEventListener("drop", (e) => handleDrop(e, slot, i, sideArray));
+
+        slot.addEventListener("dblclick", () => {
+          clearSlot(sideName, i);
+          showFeedback("", false, true);
+        });
+
+        container.appendChild(slot);
+      }
+    }
+
+    function bindWireSpoolDragEvents() {
+      document.querySelectorAll(".wire-source").forEach(wire => {
+        wire.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("colorCode", wire.dataset.color);
+          e.dataTransfer.effectAllowed = "copy";
+        });
+      });
+    }
+
+    function getTargetArray(sideName) {
+      return sideName === "left" ? leftWires : rightWires;
+    }
+
+    function getSlotElement(sideName, index) {
+      return document.querySelector(`.slot[data-side="${sideName}"][data-index="${index}"]`);
+    }
+
+    function paintWireInSlot(slot, colorCode) {
+      const existing = slot.querySelector(".inserted-wire");
+      if (existing) existing.remove();
+
+      const wireDiv = document.createElement("div");
+      wireDiv.className = `inserted-wire ${wireData[colorCode].class}`;
+      slot.appendChild(wireDiv);
+    }
+
+    function placeWire(sideName, index, colorCode) {
+      if (!wireData[colorCode]) return;
+      const targetArray = getTargetArray(sideName);
+      targetArray[index] = colorCode;
+
+      const slot = getSlotElement(sideName, index);
+      if (slot) paintWireInSlot(slot, colorCode);
+    }
+
+    function clearSlot(sideName, index) {
+      const targetArray = getTargetArray(sideName);
+      targetArray[index] = null;
+
+      const slot = getSlotElement(sideName, index);
+      if (!slot) return;
+      const existing = slot.querySelector(".inserted-wire");
+      if (existing) existing.remove();
+    }
+
+    function handleDrop(e, slot, index, targetArray) {
+      e.preventDefault();
+      slot.classList.remove("active");
+      const colorCode = e.dataTransfer.getData("colorCode");
+      if (!wireData[colorCode]) return;
+
+      targetArray[index] = colorCode;
+      paintWireInSlot(slot, colorCode);
+    }
+
+    // ----------------------------
+    // Validation / Feedback
+    // ----------------------------
+    function checkCabling() {
+      const leftStr = JSON.stringify(leftWires);
+      const rightStr = JSON.stringify(rightWires);
+      const t568bStr = JSON.stringify(T568B);
+      const t568aStr = JSON.stringify(T568A);
+
+      if (leftWires.includes(null) || rightWires.includes(null)) {
+        showFeedback("Incomplete! Please fill all 8 slots on both connectors.", false);
+        return;
+      }
+
+      if (leftStr === t568bStr && rightStr === t568bStr) {
+        showFeedback("PASSED: T568B Straight-Through Cable (Standard).", true);
+        return;
+      }
+
+      if (leftStr === t568aStr && rightStr === t568aStr) {
+        showFeedback("PASSED: T568A Straight-Through Cable.", true);
+        return;
+      }
+
+      if (
+        (leftStr === t568bStr && rightStr === t568aStr) ||
+        (leftStr === t568aStr && rightStr === t568bStr)
+      ) {
+        showFeedback("PASSED: Crossover Cable (A↔B).", true);
+        return;
+      }
+
+      showFeedback("FAILED: Wiring does not match T568A / T568B / Crossover standards.", false);
+    }
+
+    function showFeedback(msg, isSuccess, hide = false) {
+      if (hide || !msg) {
+        feedbackEl.style.display = "none";
+        feedbackEl.className = "feedback-box";
+        feedbackEl.textContent = "";
+        return;
+      }
+      feedbackEl.style.display = "block";
+      feedbackEl.textContent = msg;
+      feedbackEl.className = isSuccess ? "feedback-box feedback-success" : "feedback-box feedback-error";
+    }
+
+    function resetLab() {
+      leftWires = new Array(8).fill(null);
+      rightWires = new Array(8).fill(null);
+
+      createSlots(leftContainer, leftWires, "left");
+      createSlots(rightContainer, rightWires, "right");
+
+      showFeedback("", false, true);
+      clearHandHoverHighlights();
+      cancelHandWireDrag(false);
+      setCamStatus("Lab reset.", "warn");
+    }
+
+    function fillSide(sideName, sequence) {
+      sequence.forEach((color, i) => placeWire(sideName, i, color));
+    }
+
+    function autoFill(mode) {
+      if (mode === "B") {
+        fillSide("left", T568B);
+        fillSide("right", T568B);
+        showFeedback("Auto-filled T568B straight-through on both ends.", true);
+      } else if (mode === "A") {
+        fillSide("left", T568A);
+        fillSide("right", T568A);
+        showFeedback("Auto-filled T568A straight-through on both ends.", true);
+      } else if (mode === "X") {
+        fillSide("left", T568B);
+        fillSide("right", T568A);
+        showFeedback("Auto-filled crossover cable (T568B ↔ T568A).", true);
+      }
+    }
+
+    // ----------------------------
+    // Hand Control (MediaPipe)
+    // ----------------------------
+    const webcam = document.getElementById("webcam");
+    const camOverlay = document.getElementById("camOverlay");
+    const camCtx = camOverlay.getContext("2d");
+
+    const startCamBtn = document.getElementById("startCamBtn");
+    const stopCamBtn = document.getElementById("stopCamBtn");
+    const camStatusEl = document.getElementById("camStatus");
+    const camBadge = document.getElementById("camBadge");
+
+    const handCursor = document.getElementById("handCursor");
+    const handDragTrail = document.getElementById("handDragTrail");
+    const handDragTrailPath = document.getElementById("handDragTrailPath");
+    const handDragAnchor = document.getElementById("handDragAnchor");
+    const handWireGhost = document.getElementById("handWireGhost");
+
+    let handLandmarker = null;
+    let cameraStream = null;
+    let cameraRunning = false;
+    let rafId = 0;
+    let lastVideoTime = -1;
+
+    const handState = {
+      enabled: false,
+      visible: false,
+      pinching: false,
+      cursorX: 0,
+      cursorY: 0,
+      targetX: 0,
+      targetY: 0,
+      currentHoverSlot: null,
+      currentHoverBtn: null,
+
+      // continuous drag state
+      draggingWire: false,
+      draggingColor: null,
+      dragStartX: 0,
+      dragStartY: 0,
+      dragSourceType: null, // "spool" | "slot"
+      dragSourceEl: null,
+      dragSourceSide: null,
+      dragSourceIndex: null
+    };
+
+    const HAND_CONNECTIONS = [
+      [0,1],[1,2],[2,3],[3,4],
+      [0,5],[5,6],[6,7],[7,8],
+      [5,9],[9,10],[10,11],[11,12],
+      [9,13],[13,14],[14,15],[15,16],
+      [13,17],[17,18],[18,19],[19,20],
+      [0,17]
+    ];
+
+    function setCamStatus(msg, type = "good") {
+      camStatusEl.textContent = msg;
+      camStatusEl.className = "status " + type;
+    }
+
+    async function initHandLandmarker() {
+      if (handLandmarker) return handLandmarker;
+
+      setCamStatus("Loading hand tracker...", "warn");
+
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+      );
+
+      const modelUrl =
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+      try {
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: modelUrl, delegate: "GPU" },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.6,
+          minHandPresenceConfidence: 0.6,
+          minTrackingConfidence: 0.5
+        });
+      } catch {
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: modelUrl },
+          runningMode: "VIDEO",
+          numHands: 1,
+          minHandDetectionConfidence: 0.6,
+          minHandPresenceConfidence: 0.6,
+          minTrackingConfidence: 0.5
+        });
+      }
+
+      setCamStatus("Hand tracker ready.", "good");
+      return handLandmarker;
+    }
+
+    async function startCamera() {
+      try {
+        await initHandLandmarker();
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+          audio: false
+        });
+
+        webcam.srcObject = cameraStream;
+        await webcam.play();
+
+        cameraRunning = true;
+        handState.enabled = true;
+        camBadge.textContent = "Camera: ON";
+        setCamStatus("Camera started. Show one hand clearly.", "good");
+
+        predictLoop();
+      } catch (err) {
+        console.error(err);
+        camBadge.textContent = "Camera: OFF";
+        setCamStatus("Camera/hand tracking failed. Check permission or use localhost.", "bad");
+      }
+    }
+
+    function stopCamera() {
+      cameraRunning = false;
+      handState.enabled = false;
+      handState.visible = false;
+      handState.pinching = false;
+
+      cancelHandWireDrag(false);
+      clearHandHoverHighlights();
+      clearHandButtonHover();
+
+      updateHandCursorVisual();
+      cancelAnimationFrame(rafId);
+
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      webcam.srcObject = null;
+      camCtx.clearRect(0, 0, camOverlay.width, camOverlay.height);
+      camBadge.textContent = "Camera: OFF";
+      setCamStatus("Camera stopped.", "warn");
+    }
+
+    function resizeCamCanvasToVideo() {
+      if (!webcam.videoWidth || !webcam.videoHeight) return;
+      if (camOverlay.width !== webcam.videoWidth || camOverlay.height !== webcam.videoHeight) {
+        camOverlay.width = webcam.videoWidth;
+        camOverlay.height = webcam.videoHeight;
+      }
+    }
+
+    function drawHandResults(results) {
+      camCtx.clearRect(0, 0, camOverlay.width, camOverlay.height);
+      if (!results?.landmarks?.length) return;
+
+      const landmarks = results.landmarks[0];
+
+      camCtx.lineWidth = 2;
+      camCtx.strokeStyle = "rgba(87,216,255,0.9)";
+      for (const [a, b] of HAND_CONNECTIONS) {
+        const p1 = landmarks[a], p2 = landmarks[b];
+        camCtx.beginPath();
+        camCtx.moveTo(p1.x * camOverlay.width, p1.y * camOverlay.height);
+        camCtx.lineTo(p2.x * camOverlay.width, p2.y * camOverlay.height);
+        camCtx.stroke();
+      }
+
+      for (let i = 0; i < landmarks.length; i++) {
+        const p = landmarks[i];
+        camCtx.beginPath();
+        camCtx.arc(p.x * camOverlay.width, p.y * camOverlay.height, (i === 4 || i === 8) ? 5 : 3, 0, Math.PI * 2);
+        camCtx.fillStyle =
+          i === 8 ? "rgba(255,255,255,0.95)" :
+          i === 4 ? "rgba(255,159,26,0.95)" :
+          "rgba(87,216,255,0.85)";
+        camCtx.fill();
+      }
+    }
+
+    function distance2D(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function updateHandCursorVisual() {
+      if (!handState.enabled || !handState.visible) {
+        handCursor.classList.remove("show", "pinching");
+      } else {
+        handCursor.classList.add("show");
+        handCursor.classList.toggle("pinching", handState.pinching);
+        handCursor.style.left = handState.cursorX + "px";
+        handCursor.style.top = handState.cursorY + "px";
+      }
+
+      updateHandWireDragVisual();
+    }
+
+    function updateHandWireDragVisual() {
+      if (!handState.draggingWire || !handState.draggingColor) {
+        handWireGhost.classList.remove("show");
+        handDragTrail.classList.remove("show");
+        handDragTrailPath.setAttribute("d", "");
+        return;
+      }
+
+      // ghost
+      handWireGhost.className = `hand-wire-ghost show ${wireData[handState.draggingColor].class}`;
+      handWireGhost.style.left = `${handState.cursorX}px`;
+      handWireGhost.style.top = `${handState.cursorY}px`;
+
+      // trail
+      handDragTrail.classList.add("show");
+      handDragTrail.setAttribute("viewBox", `0 0 ${window.innerWidth} ${window.innerHeight}`);
+
+      const x1 = handState.dragStartX;
+      const y1 = handState.dragStartY;
+      const x2 = handState.cursorX;
+      const y2 = handState.cursorY;
+
+      const cx1 = x1 + (x2 - x1) * 0.35;
+      const cy1 = y1 - 20;
+      const cx2 = x1 + (x2 - x1) * 0.75;
+      const cy2 = y2 + 10;
+
+      handDragTrailPath.setAttribute("d", `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+      handDragAnchor.setAttribute("cx", String(x1));
+      handDragAnchor.setAttribute("cy", String(y1));
+    }
+
+    function clearHandHoverHighlights() {
+      document.querySelectorAll(".slot.hand-target").forEach(s => s.classList.remove("hand-target"));
+      handState.currentHoverSlot = null;
+    }
+
+    function clearHandButtonHover() {
+      document.querySelectorAll(".hand-hover").forEach(el => el.classList.remove("hand-hover"));
+      handState.currentHoverBtn = null;
+    }
+
+    function getElementAtCursor() {
+      return document.elementFromPoint(handState.cursorX, handState.cursorY);
+    }
+
+    function getSlotAtCursor() {
+      const el = getElementAtCursor();
+      return el?.closest?.(".slot") || null;
+    }
+
+    function getWireSourceAtCursor() {
+      const el = getElementAtCursor();
+      return el?.closest?.(".wire-source") || null;
+    }
+
+    function getButtonAtCursor() {
+      const el = getElementAtCursor();
+      return el?.closest?.("button") || null;
+    }
+
+    function updateHoverStates() {
+      clearHandHoverHighlights();
+      clearHandButtonHover();
+
+      const slot = getSlotAtCursor();
+      if (slot) {
+        slot.classList.add("hand-target");
+        handState.currentHoverSlot = slot;
+      }
+
+      const btn = getButtonAtCursor();
+      if (btn) {
+        btn.classList.add("hand-hover");
+        handState.currentHoverBtn = btn;
+      }
+    }
+
+    function getSlotWireColor(slotEl) {
+      if (!slotEl) return null;
+      const side = slotEl.dataset.side;
+      const index = Number(slotEl.dataset.index);
+      const arr = getTargetArray(side);
+      return arr[index] || null;
+    }
+
+    function startHandWireDrag({ colorCode, sourceType, sourceEl = null, sourceSide = null, sourceIndex = null }) {
+      if (!wireData[colorCode]) return false;
+
+      // clear previous state
+      cancelHandWireDrag(false);
+
+      handState.draggingWire = true;
+      handState.draggingColor = colorCode;
+      handState.dragStartX = handState.cursorX;
+      handState.dragStartY = handState.cursorY;
+      handState.dragSourceType = sourceType;
+      handState.dragSourceEl = sourceEl || null;
+      handState.dragSourceSide = sourceSide ?? null;
+      handState.dragSourceIndex = Number.isInteger(sourceIndex) ? sourceIndex : null;
+
+      if (sourceType === "spool" && sourceEl) {
+        sourceEl.classList.add("hand-selected");
+      }
+
+      if (sourceType === "slot" && sourceEl && sourceSide != null && Number.isInteger(sourceIndex)) {
+        // remove from original slot immediately while dragging
+        clearSlot(sourceSide, sourceIndex);
+      }
+
+      setCamStatus(`Dragging ${wireData[colorCode].name}... release pinch on a slot to place.`, "good");
+      updateHandCursorVisual();
+      return true;
+    }
+
+    function cancelHandWireDrag(restoreToSource = true) {
+      if (!handState.draggingWire) {
+        handWireGhost.classList.remove("show");
+        handDragTrail.classList.remove("show");
+        document.querySelectorAll(".wire-source.hand-selected").forEach(el => el.classList.remove("hand-selected"));
+        return;
+      }
+
+      // If dragging from a slot and cancelled, restore the wire to original slot
+      if (
+        restoreToSource &&
+        handState.dragSourceType === "slot" &&
+        handState.draggingColor &&
+        handState.dragSourceSide != null &&
+        Number.isInteger(handState.dragSourceIndex)
+      ) {
+        placeWire(handState.dragSourceSide, handState.dragSourceIndex, handState.draggingColor);
+      }
+
+      document.querySelectorAll(".wire-source.hand-selected").forEach(el => el.classList.remove("hand-selected"));
+
+      handState.draggingWire = false;
+      handState.draggingColor = null;
+      handState.dragSourceType = null;
+      handState.dragSourceEl = null;
+      handState.dragSourceSide = null;
+      handState.dragSourceIndex = null;
+
+      handWireGhost.classList.remove("show");
+      handDragTrail.classList.remove("show");
+      handDragTrailPath.setAttribute("d", "");
+    }
+
+    function finishHandWireDrop(slotEl) {
+      if (!handState.draggingWire || !handState.draggingColor || !slotEl) return false;
+
+      const side = slotEl.dataset.side;
+      const index = Number(slotEl.dataset.index);
+      if (!Number.isInteger(index)) return false;
+
+      placeWire(side, index, handState.draggingColor);
+
+      const placedName = wireData[handState.draggingColor].name;
+      cancelHandWireDrag(false);
+
+      setCamStatus(`Placed ${placedName} in ${side.toUpperCase()} pin ${index + 1}.`, "good");
+      showFeedback("", false, true);
+      return true;
+    }
+
+    function handlePinchStart() {
+      // Buttons act like click (only if not currently dragging a wire)
+      const btn = getButtonAtCursor();
+      if (btn && !handState.draggingWire) {
+        btn.click();
+        setCamStatus(`Pressed: ${btn.textContent.trim()}`, "good");
+        return;
+      }
+
+      // Start dragging from spool wire
+      const wireEl = getWireSourceAtCursor();
+      if (wireEl && !handState.draggingWire) {
+        const color = wireEl.dataset.color;
+        startHandWireDrag({
+          colorCode: color,
+          sourceType: "spool",
+          sourceEl: wireEl
+        });
+        return;
+      }
+
+      // Start dragging from existing filled slot
+      const slotEl = getSlotAtCursor();
+      if (slotEl && !handState.draggingWire) {
+        const currentColor = getSlotWireColor(slotEl);
+        if (currentColor) {
+          startHandWireDrag({
+            colorCode: currentColor,
+            sourceType: "slot",
+            sourceEl: slotEl,
+            sourceSide: slotEl.dataset.side,
+            sourceIndex: Number(slotEl.dataset.index)
+          });
+          return;
+        } else {
+          // empty slot pinch: no-op
+          setCamStatus("Empty slot. Pick a wire first, then drag it here.", "warn");
+        }
+      }
+    }
+
+    function handlePinchEnd() {
+      // If dragging a wire, try to drop on hovered slot
+      if (handState.draggingWire) {
+        const slotEl = getSlotAtCursor();
+        if (slotEl) {
+          finishHandWireDrop(slotEl);
+        } else {
+          setCamStatus("Drop cancelled. Release pinch over a slot to place wire.", "warn");
+          cancelHandWireDrag(true);
+        }
+        return;
+      }
+    }
+
+    function handleHandGesture(landmarks) {
+      if (!landmarks || !landmarks.length) {
+        handState.visible = false;
+        if (handState.pinching) {
+          handState.pinching = false;
+          handlePinchEnd();
+        }
+        clearHandHoverHighlights();
+        clearHandButtonHover();
+        updateHandCursorVisual();
+        return;
+      }
+
+      const indexTip = landmarks[8];
+      const thumbTip = landmarks[4];
+
+      const workRect = workspaceEl.getBoundingClientRect();
+
+      // Map hand pointer to workspace (excluding header)
+      const mappedX = workRect.left + (1 - indexTip.x) * workRect.width; // mirrored
+      const mappedY = workRect.top + indexTip.y * workRect.height;
+
+      if (!handState.visible) {
+        handState.cursorX = mappedX;
+        handState.cursorY = mappedY;
+      } else {
+        handState.cursorX += (mappedX - handState.cursorX) * 0.35;
+        handState.cursorY += (mappedY - handState.cursorY) * 0.35;
+      }
+
+      handState.targetX = mappedX;
+      handState.targetY = mappedY;
+      handState.visible = true;
+
+      updateHoverStates();
+
+      const pinchDist = distance2D(indexTip, thumbTip);
+      const PINCH_ON = 0.045;
+      const PINCH_OFF = 0.065;
+
+      if (!handState.pinching && pinchDist < PINCH_ON) {
+        handState.pinching = true;
+        handlePinchStart();
+      } else if (handState.pinching && pinchDist > PINCH_OFF) {
+        handState.pinching = false;
+        handlePinchEnd();
+      }
+
+      updateHandCursorVisual();
+    }
+
+    async function predictLoop() {
+      if (!cameraRunning || !handLandmarker) return;
+
+      resizeCamCanvasToVideo();
+
+      if (webcam.readyState >= 2 && lastVideoTime !== webcam.currentTime) {
+        lastVideoTime = webcam.currentTime;
+        const results = handLandmarker.detectForVideo(webcam, performance.now());
+        drawHandResults(results);
+
+        if (results?.landmarks?.length) {
+          handleHandGesture(results.landmarks[0]);
+        } else {
+          handleHandGesture(null);
+        }
+      }
+
+      rafId = requestAnimationFrame(predictLoop);
+    }
+
+    // ----------------------------
+    // Event bindings
+    // ----------------------------
+    checkBtn.addEventListener("click", checkCabling);
+    resetBtn.addEventListener("click", resetLab);
+
+    fillBBtn.addEventListener("click", () => autoFill("B"));
+    fillABtn.addEventListener("click", () => autoFill("A"));
+    fillCrossBtn.addEventListener("click", () => autoFill("X"));
+
+    startCamBtn.addEventListener("click", startCamera);
+    stopCamBtn.addEventListener("click", stopCamera);
+
+    window.addEventListener("resize", () => {
+      if (handState.enabled) updateHandCursorVisual();
+    });
+
+    // ----------------------------
+    // Init
+    // ----------------------------
+    createSlots(leftContainer, leftWires, "left");
+    createSlots(rightContainer, rightWires, "right");
+    bindWireSpoolDragEvents();
+  </script>
+</body>
+</html>
