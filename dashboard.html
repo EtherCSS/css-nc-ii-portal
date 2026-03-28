@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSS NC II | Student Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #ff9f1a;
+      --primary-glow: rgba(255, 159, 26, 0.5);
+      --bg-dark: #09090b;
+      --surface: rgba(24, 24, 27, 0.75);
+      --surface-light: rgba(255, 255, 255, 0.05);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --text: #fafafa;
+      --text-muted: #a1a1aa;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #bg-video {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: -2; opacity: 0.4;
+    }
+    .video-overlay {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at center, rgba(9,9,11,0.5) 0%, #09090b 100%);
+      z-index: -1;
+    }
+
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 5%;
+      background: rgba(9, 9, 11, 0.6);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface-border);
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand h2 { margin: 0; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+    .brand span { color: var(--primary); }
+    
+    .nav-links { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-weight: 500; font-size: 14px; transition: var(--transition);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .nav-links a:hover { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
+
+    .nav-actions { display: flex; gap: 12px; }
+    
+    .btn {
+      padding: 10px 20px; border-radius: 8px; font-weight: 600;
+      cursor: pointer; font-size: 14px; transition: var(--transition);
+      display: inline-flex; align-items: center; gap: 8px; border: none;
+    }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--surface-border); }
+    .btn-ghost:hover { background: var(--surface-light); color: #fff; border-color: #fff; }
+    
+    .btn-primary { 
+      background: var(--primary); color: #000; 
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--primary-glow); }
+
+    .main-container {
+      max-width: 1200px; margin: 0 auto; padding: 60px 20px;
+      width: 100%; flex: 1; display: flex; flex-direction: column; align-items: center;
+      animation: fadeUp 0.8s ease-out;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .hero-text { text-align: center; margin-bottom: 40px; }
+    .hero-text h1 { font-size: 48px; margin: 0 0 12px; font-weight: 800; line-height: 1.1; }
+    .hero-text p { font-size: 18px; color: var(--text-muted); margin: 0; }
+
+    .search-card {
+      background: var(--surface); backdrop-filter: blur(24px);
+      padding: 30px; border-radius: 20px; border: 1px solid var(--surface-border);
+      width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    .search-box { position: relative; display: flex; gap: 10px; }
+    .search-input {
+      flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--surface-border);
+      padding: 16px 20px; border-radius: 12px; color: #fff; font-size: 16px;
+      transition: var(--transition);
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+    .error-msg { color: var(--danger); font-size: 13px; font-weight: 600; display: none; padding-left: 5px; margin-top: 5px; }
+
+    .resources-title { margin-top: 60px; margin-bottom: 20px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); font-weight: 600; }
+    .grid-links {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px; width: 100%;
+    }
+    .link-card {
+      background: var(--surface-light); border: 1px solid var(--surface-border);
+      padding: 20px; border-radius: 14px; text-decoration: none; color: #fff;
+      font-weight: 600; display: flex; align-items: center; gap: 12px;
+      transition: var(--transition); font-size: 14px;
+    }
+    .link-card i { color: var(--primary); font-size: 18px; }
+    .link-card:hover { 
+      background: rgba(255, 159, 26, 0.08); border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+
+    .chatbot-trigger {
+      position: fixed; bottom: 30px; right: 30px;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #e67e22);
+      color: #000;
+      display: grid; place-items: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255, 159, 26, 0.4);
+      z-index: 3000;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .chatbot-trigger:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 15px 40px rgba(255, 159, 26, 0.6); }
+    .chatbot-trigger::after {
+      content:''; position: absolute; inset: -4px; border-radius: 50%;
+      border: 2px solid var(--primary); opacity: 0; animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+
+    .chat-window {
+      position: fixed; bottom: 100px; right: 30px;
+      width: 360px; height: 500px;
+      background: #18181b;
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      display: none; flex-direction: column;
+      z-index: 3000;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+      overflow: hidden; opacity: 0; transform: translateY(20px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chat-window.open { display: flex; opacity: 1; transform: translateY(0) scale(1); }
+
+    .chat-header {
+      background: rgba(255,255,255,0.03); padding: 16px; border-bottom: 1px solid var(--surface-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .bot-info { display: flex; gap: 10px; align-items: center; }
+    .bot-avatar {
+      width: 32px; height: 32px; background: var(--primary); border-radius: 50%;
+      display: grid; place-items: center; font-size: 14px; color: #000;
+    }
+    .chat-body { 
+      flex: 1; padding: 20px; overflow-y: auto; 
+      display: flex; flex-direction: column; gap: 12px;
+      scroll-behavior: smooth;
+    }
+    .chat-body::-webkit-scrollbar { width: 6px; }
+    .chat-body::-webkit-scrollbar-track { background: transparent; }
+    .chat-body::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    .chat-msg { 
+      padding: 12px 16px; border-radius: 18px; max-width: 85%; 
+      font-size: 13px; line-height: 1.5; position: relative;
+    }
+    .msg-bot { 
+      background: #27272a; color: var(--text); align-self: flex-start; 
+      border-bottom-left-radius: 4px; border: 1px solid var(--surface-border);
+    }
+    .msg-user { 
+      background: var(--primary); color: #000; align-self: flex-end; 
+      border-bottom-right-radius: 4px; font-weight: 500;
+    }
+    
+    .chat-footer { padding: 12px; border-top: 1px solid var(--surface-border); display: flex; gap: 8px; background: #18181b; }
+    .chat-footer input { 
+      flex: 1; background: #27272a; border: 1px solid var(--surface-border); 
+      padding: 12px; border-radius: 10px; color: #fff; font-size: 13px;
+    }
+    .chat-footer input:focus { border-color: var(--primary); }
+
+    .typing-indicator { display: none; gap: 4px; padding: 12px 16px; background: #27272a; border-radius: 18px; align-self: flex-start; width: fit-content; margin-top: 5px; }
+    .dot { width: 6px; height: 6px; background: #666; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px); z-index: 2000;
+      display: none; place-items: center; opacity: 0; transition: opacity 0.3s;
+    }
+    .overlay.show { display: grid; opacity: 1; }
+    
+    .modal-card {
+      background: #111; border: 1px solid var(--surface-border); border-radius: 24px;
+      width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.9); transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .overlay.show .modal-card { transform: scale(1); }
+
+    .modal-header {
+      padding: 24px; border-bottom: 1px solid var(--surface-border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.02);
+    }
+    .modal-body { padding: 30px; }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; transition: 0.2s; }
+    .close-btn:hover { color: #fff; transform: rotate(90deg); }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    th { text-align: left; padding: 14px; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--surface-border); }
+    td { padding: 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 14px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-box { background: var(--surface-light); padding: 20px; border-radius: 16px; border: 1px solid var(--surface-border); }
+    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+    .stat-value { font-size: 28px; font-weight: 800; }
+    .stat-value.good { color: var(--success); }
+    .stat-value.bad { color: var(--danger); }
+
+    .admin-login-box {
+      width: 340px; background: #18181b; padding: 40px; border-radius: 24px;
+      border: 1px solid var(--surface-border); text-align: center;
+    }
+    .admin-login-box input { width: 100%; margin-bottom: 12px; padding: 14px; background: #09090b; border: 1px solid var(--surface-border); border-radius: 10px; color: #fff; }
+
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .edit-input { width: 60px; background: #000; border: 1px solid var(--surface-border); color: #fff; padding: 6px; border-radius: 6px; text-align: center; }
+
+    @media (max-width: 768px) {
+      .navbar { flex-direction: column; gap: 15px; }
+      .nav-links { gap: 15px; flex-wrap: wrap; justify-content: center; }
+      .hero-text h1 { font-size: 32px; }
+      .chatbot-trigger { bottom: 20px; right: 20px; width: 50px; height: 50px; }
+      .chat-window { bottom: 80px; right: 10px; left: 10px; width: auto; height: 60vh; }
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="video-overlay"></div>
+  <video autoplay muted loop id="bg-video">
+    <source src="hud-elements.mp4" type="video/mp4" />
+  </video>
+
+  <nav class="navbar">
+    <div class="brand">
+      <i class="fa-solid fa-layer-group" style="color:var(--primary); font-size: 24px;"></i>
+      <div>
+        <h2>CSS <span>NC II</span></h2>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Home</a></li>
+      <li><a href="coc1.html">COC 1</a></li>
+      <li><a href="coc2.html">COC 2</a></li>
+      <li><a href="coc3.html">COC 3</a></li>
+      <li><a href="coc4.html">COC 4</a></li>
+      <li><a href="virtuallab.html">Virtual Lab</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" id="adminBtn" onclick="openAdmin()">
+        <i class="fa-solid fa-lock"></i> Admin
+      </button>
+      <button class="btn btn-primary" onclick="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="hero-text">
+      <h1>Student <span style="color:var(--primary)">Portal</span></h1>
+      <p>Manage your academic progress and access learning modules.</p>
+    </div>
+
+    <div class="search-card">
+      <label style="font-weight:700; font-size:12px; letter-spacing:1px; color:var(--text-muted)">STUDENT ACCESS</label>
+      <div class="search-box">
+        <input type="text" id="studentNumber" class="search-input" placeholder="Enter LRN" />
+        <button class="btn btn-primary" onclick="checkGrades()">Check Grades</button>
+      </div>
+      <div id="lookupError" class="error-msg">
+        <i class="fa-solid fa-circle-exclamation"></i> Student number not found.
+      </div>
+    </div>
+
+    <div class="resources-title">External Tools & Resources</div>
+    <div class="grid-links">
+      <a href="https://ethercss.github.io/ARAL-literacy-Tracker/login.html" target="_blank" class="link-card">
+        <i class="fa-solid fa-book-open"></i> Literacy Tracker
+      </a>
+      <a href="https://ethercss.github.io/Mean-MPS-2026/" target="_blank" class="link-card">
+        <i class="fa-solid fa-chart-pie"></i> MPS Generator
+      </a>
+      <a href="#" class="link-card">
+        <i class="fa-solid fa-briefcase"></i> Career Path
+      </a>
+      <a href="certification.html" target="_blank" class="link-card">
+        <i class="fa-solid fa-certificate"></i> Certificates
+      </a>
+      <a href="https://e-tesda.gov.ph/" target="_blank" class="link-card">
+        <i class="fa-solid fa-globe"></i> e-TESDA
+      </a>
+      <a href="assisstant/rib.html" class="link-card">
+        <i class="fa-solid fa-chalkboard-user"></i> Virtual Teacher
+      </a>
+    </div>
+  </div>
+
+  <div class="chatbot-trigger" onclick="toggleChatbot()">
+    <i class="fa-solid fa-comments"></i>
+  </div>
+  
+  <div class="chat-window" id="chatbotWindow">
+    <div class="chat-header">
+      <div class="bot-info">
+        <div class="bot-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:14px; color:#fff;">Rib AI</div>
+          <div style="font-size:11px; color:var(--text-muted);">Online & Ready</div>
+        </div>
+      </div>
+      <i class="fa-solid fa-xmark close-btn" onclick="toggleChatbot()"></i>
+    </div>
+    
+    <div class="chat-body" id="chatbotMessages">
+      <div class="chat-msg msg-bot">
+        Hello! I'm Rib, your CSS NC II Assistant. 🤖<br><br>
+        Ask me about:<br>
+        • Your Grades<br>
+        • COC Modules (1-4)<br>
+        • Computer Systems
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+
+    <div class="chat-footer">
+      <input type="text" id="chatbotInput" placeholder="Ask a question..." autocomplete="off">
+      <button class="btn btn-primary" style="padding: 8px 12px" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <div id="gradeOverlay" class="overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div style="width:40px; height:40px; border-radius:50%; background:var(--primary); color:#000; display:grid; place-items:center; font-weight:800;" id="avatarInitials">ST</div>
+          <div>
+            <h3 style="margin:0; font-size:18px;" id="dashTitle">Student Name</h3>
+            <span style="font-size:12px; color:var(--text-muted)" id="dashStudentId">ID: --</span>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeOverlay()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-label">1st Sem Average</div>
+            <div class="stat-value" id="firstSemAvg">--</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">2nd Sem Average</div>
+            <div class="stat-value" id="secondSemAvg">--</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">General Average</div>
+            <div class="stat-value" id="avgGrade">--</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Status</div>
+            <div id="statusBadge" style="font-weight:800; font-size:20px;">--</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Remarks</div>
+            <div style="font-size:16px; font-weight:600; color:#fff;" id="remarks">--</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <h4 style="margin:0; text-transform:uppercase; color:var(--text-muted); font-size:12px;">Subject Breakdown</h4>
+            <button class="btn btn-ghost" id="tabFirst" style="padding:6px 12px; font-size:12px;" onclick="switchSemester('first')">1st Sem</button>
+            <button class="btn btn-ghost" id="tabSecond" style="padding:6px 12px; font-size:12px;" onclick="switchSemester('second')">2nd Sem</button>
+          </div>
+          <div id="adminEditControls" class="hidden">
+            <button class="btn btn-primary" style="padding:6px 12px; font-size:12px;" onclick="saveEditedGrades()">Save</button>
+            <button class="btn btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="cancelEditMode()">Cancel</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Subject</th><th id="quarterOneHead">Q1</th><th id="quarterTwoHead">Q2</th><th>Final</th></tr>
+          </thead>
+          <tbody id="gradesTableBody"></tbody>
+        </table>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:15px;">
+          <div id="semesterLabel" style="font-size:11px; color:var(--text-muted);">Showing First Semester</div>
+          <div style="font-size:11px; color:var(--text-muted); text-align:right;" id="asOf"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminLoginOverlay" class="overlay">
+    <div class="admin-login-box">
+      <i class="fa-solid fa-fingerprint" style="font-size:48px; color:var(--primary); margin-bottom:20px;"></i>
+      <h3 style="margin-top:0; color:#fff;">Admin Access</h3>
+      <input id="adminUser" placeholder="Username" autocomplete="off" />
+      <input id="adminPass" placeholder="Password" type="password" />
+      <div id="adminLoginError" class="error-msg" style="margin-bottom:15px;">Invalid Credentials</div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" style="flex:1" onclick="adminLogin()">Login</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeAdminLogin()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminPanelOverlay" class="overlay">
+    <div class="modal-card" style="max-width:1100px;">
+      <div class="modal-header">
+        <h3 style="margin:0"><i class="fa-solid fa-toolbox"></i> Admin Control</h3>
+        <button class="close-btn" onclick="closeAdminPanel()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-grid">
+          <div class="stat-box">
+            <h4 style="margin-top:0; font-size:14px;"><i class="fa-solid fa-upload"></i> Upload Lessons</h4>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+              <input type="file" id="lessonFileInput" style="font-size:12px; color:var(--text-muted); width:100%;">
+              <button class="btn btn-primary" style="padding:6px 12px; font-size:12px;" onclick="adminUploadLesson()">Upload</button>
+            </div>
+            <ul id="lessonsList" style="list-style:none; padding:0; font-size:13px; color:var(--text-muted)"></ul>
+          </div>
+
+          <div class="stat-box">
+            <h4 style="margin-top:0; font-size:14px;"><i class="fa-solid fa-chart-simple"></i> Class Overview</h4>
+            <div id="progressList" style="max-height:200px; overflow-y:auto; padding-right:5px;"></div>
+          </div>
+
+          <div class="stat-box" style="grid-column: 1 / -1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <h4 style="margin:0; font-size:14px;"><i class="fa-solid fa-user-pen"></i> Manage Students</h4>
+              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openAddStudentModal()">
+                <i class="fa-solid fa-plus"></i> Add New
+              </button>
+            </div>
+            <div style="max-height:300px; overflow-y:auto;">
+              <table>
+                <thead><tr><th>ID</th><th>Name</th><th>AVG</th><th>Action</th></tr></thead>
+                <tbody id="studentManageTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="addStudentOverlay" class="overlay">
+    <div class="admin-login-box">
+      <i class="fa-solid fa-user-plus" style="font-size:48px; color:var(--primary); margin-bottom:20px;"></i>
+      <h3 style="margin-top:0; color:#fff;">Register Student</h3>
+      
+      <input id="newStudentId" placeholder="Student ID (e.g. 123...)" autocomplete="off" />
+      <input id="newStudentLast" placeholder="Last Name" autocomplete="off" />
+      <input id="newStudentFirst" placeholder="First Name" autocomplete="off" />
+      
+      <div id="addStudentError" class="error-msg" style="margin-bottom:15px;">ID already exists</div>
+      
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" style="flex:1" onclick="submitNewStudent()">Save</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeAddStudentModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'css_nc2_data_v3';
+    const FIRST_SEM_SUBJECTS = [
+      "Intro to Philosophy", "Contemp. Arts", "Understanding Culture",
+      "PE & Health", "Practical Research 2", "Filipino sa Piling Larang",
+      "Social Science", "TVL 5 & 6 (Core Competencies)"
+    ];
+
+    const SECOND_SEM_SUBJECTS = [
+      "Media & Info Literacy", "Physical Science", "P.E.",
+      "Inquiries & Investigations", "Applied Economics", "DRRR",
+      "Work Immersion", "TVL 7 & 8"
+    ];
+
+    const INITIAL_GRADES = [
+      {id:'123285120108',name:'ABILA, ROLANDO JR. CAHUTAY',g1q1:86,g1q2:86,g1final:86,g2q1:83,g2q2:84,g2final:84,g3q1:78,g3q2:78,g3final:78,g4q1:80,g4q2:84,g4final:82,g5q1:75,g5q2:75,g5final:75,g6q1:85,g6q2:82,g6final:84,g7q1:80,g7q2:82,g7final:81,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285120037',name:'ALVARADO, JOVANE RABASTO',g1q1:84,g1q2:84,g1final:84,g2q1:83,g2q2:84,g2final:84,g3q1:75,g3q2:75,g3final:75,g4q1:80,g4q2:84,g4final:82,g5q1:75,g5q2:75,g5final:75,g6q1:78,g6q2:78,g6final:78,g7q1:75,g7q2:75,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123295130008',name:'BARTOLATA, KIT JOSHUA GUTIERREZ',g1q1:90,g1q2:90,g1final:90,g2q1:87,g2q2:87,g2final:87,g3q1:87,g3q2:88,g3final:88,g4q1:85,g4q2:91,g4final:88,g5q1:90,g5q2:91,g5final:91,g6q1:83,g6q2:93,g6final:88,g7q1:88,g7q2:90,g7final:89,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123285110011',name:'BLANCA, R-JAY ATIPOLO',g1q1:78,g1q2:78,g1final:78,g2q1:77,g2q2:80,g2final:79,g3q1:75,g3q2:75,g3final:75,g4q1:81,g4q2:83,g4final:82,g5q1:75,g5q2:75,g5final:75,g6q1:77,g6q2:81,g6final:79,g7q1:76,g7q2:79,g7final:78,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130016',name:'BRANZUELA, ELVAN JAN ROMERO',g1q1:90,g1q2:90,g1final:90,g2q1:85,g2q2:87,g2final:86,g3q1:85,g3q2:87,g3final:86,g4q1:87,g4q2:87,g4final:87,g5q1:85,g5q2:85,g5final:85,g6q1:87,g6q2:87,g6final:87,g7q1:85,g7q2:83,g7final:84,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123285130019',name:'CATINGGAN, ALJUN BACUNAWA',g1q1:78,g1q2:78,g1final:78,g2q1:79,g2q2:78,g2final:79,g3q1:75,g3q2:75,g3final:75,g4q1:75,g4q2:75,g4final:75,g5q1:75,g5q2:75,g5final:75,g6q1:78,g6q2:83,g6final:81,g7q1:75,g7q2:75,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130045',name:'COLLAMAT, AKIA CZIAN MOMPIL',g1q1:79,g1q2:79,g1final:79,g2q1:79,g2q2:75,g2final:77,g3q1:75,g3q2:75,g3final:75,g4q1:77,g4q2:78,g4final:78,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:76,g6final:76,g7q1:75,g7q2:75,g7final:75,g8q1:80,g8q2:80,g8final:80,remarks:'YES'},
+      {id:'123295130009',name:'DE LARA, JHONREY ESPINA',g1q1:79,g1q2:79,g1final:79,g2q1:79,g2q2:75,g2final:77,g3q1:75,g3q2:75,g3final:75,g4q1:77,g4q2:78,g4final:78,g5q1:75,g5q2:75,g5final:75,g6q1:80,g6q2:77,g6final:79,g7q1:75,g7q2:79,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'113494130023',name:'DELA PEÑA, MARC NIÑO CONEJOS',g1q1:86,g1q2:86,g1final:86,g2q1:81,g2q2:90,g2final:86,g3q1:81,g3q2:83,g3final:82,g4q1:80,g4q2:85,g4final:83,g5q1:75,g5q2:75,g5final:75,g6q1:83,g6q2:83,g6final:83,g7q1:80,g7q2:81,g7final:81,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'103222130066',name:'DIALINO, MANOLITO JR PALAD',g1q1:85,g1q2:85,g1final:85,g2q1:82,g2q2:87,g2final:85,g3q1:77,g3q2:84,g3final:81,g4q1:85,g4q2:75,g4final:75,g5q1:75,g5q2:75,g5final:75,g6q1:80,g6q2:80,g6final:80,g7q1:88,g7q2:86,g7final:87,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123295120005',name:'LABARIÑO, JANNO CALLAO',g1q1:83,g1q2:83,g1final:83,g2q1:81,g2q2:80,g2final:81,g3q1:77,g3q2:79,g3final:78,g4q1:78,g4q2:80,g4final:78,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:77,g6final:76,g7q1:77,g7q2:78,g7final:78,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123799140016',name:'LABAYDAN, MAC JAMES ODTUHAN',g1q1:91,g1q2:91,g1final:91,g2q1:83,g2q2:83,g2final:83,g3q1:83,g3q2:87,g3final:85,g4q1:80,g4q2:84,g4final:82,g5q1:80,g5q2:80,g5final:80,g6q1:87,g6q2:88,g6final:88,g7q1:85,g7q2:86,g7final:76,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285130056',name:'MATADOS, MCKRIEGER VHINS PRUDENCIADO',g1q1:90,g1q2:90,g1final:90,g2q1:84,g2q2:84,g2final:84,g3q1:84,g3q2:87,g3final:86,g4q1:84,g4q2:85,g4final:85,g5q1:85,g5q2:85,g5final:85,g6q1:84,g6q2:82,g6final:83,g7q1:82,g7q2:85,g7final:84,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123290130007',name:'MENDOZA, DAVID AXCEL BELARMINO',g1q1:81,g1q2:81,g1final:81,g2q1:77,g2q2:75,g2final:76,g3q1:75,g3q2:75,g3final:75,g4q1:75,g4q2:75,g4final:75,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:75,g6final:75,g7q1:75,g7q2:75,g7final:75,g8q1:75,g8q2:75,g8final:75,remarks:'YES'},
+      {id:'123287120043',name:'MERINO, CARLO ROQUERO',g1q1:76,g1q2:76,g1final:76,g2q1:75,g2q2:76,g2final:76,g3q1:75,g3q2:75,g3final:75,g4q1:77,g4q2:80,g4final:79,g5q1:75,g5q2:75,g5final:75,g6q1:76,g6q2:75,g6final:76,g7q1:75,g7q2:80,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123287130009',name:'MERINO, JAY MARK MONIÑO',g1q1:77,g1q2:77,g1final:77,g2q1:81,g2q2:78,g2final:80,g3q1:78,g3q2:78,g3final:78,g4q1:80,g4q2:89,g4final:85,g5q1:75,g5q2:75,g5final:75,g6q1:81,g6q2:80,g6final:81,g7q1:75,g7q2:76,g7final:76,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130057',name:'MERINO, JHODEL VERSOZA',g1q1:85,g1q2:85,g1final:85,g2q1:80,g2q2:79,g2final:80,g3q1:75,g3q2:79,g3final:77,g4q1:78,g4q2:81,g4final:80,g5q1:75,g5q2:75,g5final:75,g6q1:82,g6q2:78,g6final:80,g7q1:75,g7q2:83,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130058',name:'MERINO, MARTIN ALVARADO',g1q1:75,g1q2:75,g1final:75,g2q1:79,g2q2:78,g2final:78,g3q1:75,g3q2:75,g3final:75,g4q1:78,g4q2:80,g4final:79,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:76,g6final:76,g7q1:75,g7q2:75,g7final:75,g8q1:75,g8q2:75,g8final:75,remarks:'YES'},
+      {id:'123290110017',name:'MONSANTO, IVAN MATIS',g1q1:86,g1q2:86,g1final:86,g2q1:80,g2q2:79,g2final:80,g3q1:77,g3q2:78,g3final:78,g4q1:82,g4q2:81,g4final:82,g5q1:75,g5q2:75,g5final:75,g6q1:81,g6q2:80,g6final:80,g7q1:77,g7q2:79,g7final:77,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130028',name:'ORBESO, JHUN LEONEL VERBO',g1q1:92,g1q2:92,g1final:92,g2q1:93,g2q2:95,g2final:94,g3q1:96,g3q2:95,g3final:96,g4q1:94,g4q2:95,g4final:95,g5q1:97,g5q2:98,g5final:98,g6q1:92,g6q2:93,g6final:93,g7q1:95,g7q2:94,g7final:95,g8q1:98,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285120117',name:'PAÑA, RAYMUND TAMAYO',g1q1:81,g1q2:81,g1final:81,g2q1:83,g2q2:90,g2final:87,g3q1:80,g3q2:81,g3final:81,g4q1:83,g4q2:85,g4final:84,g5q1:75,g5q2:75,g5final:75,g6q1:81,g6q2:86,g6final:84,g7q1:80,g7q2:82,g7final:81,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285120112',name:'ROMERO, REAL JOHN GOLLAS',g1q1:81,g1q2:81,g1final:81,g2q1:76,g2q2:75,g2final:75,g3q1:75,g3q2:75,g3final:75,g4q1:75,g4q2:75,g4final:75,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:75,g6final:75,g7q1:75,g7q2:75,g7final:75,g8q1:80,g8q2:81,g8final:81,remarks:'YES'},
+      {id:'158538140111',name:'ROSIALDA JR, EDITO ESPINOSA',g1q1:81,g1q2:81,g1final:81,g2q1:79,g2q2:79,g2final:79,g3q1:75,g3q2:79,g3final:75,g4q1:78,g4q2:81,g4final:80,g5q1:75,g5q2:75,g5final:75,g6q1:77,g6q2:77,g6final:77,g7q1:75,g7q2:76,g7final:75,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123285120087',name:'TAMAYO, JARENT CANE BELAGUIN',g1q1:75,g1q2:75,g1final:75,g2q1:82,g2q2:80,g2final:81,g3q1:80,g3q2:80,g3final:80,g4q1:84,g4q2:84,g4final:84,g5q1:75,g5q2:75,g5final:75,g6q1:80,g6q2:79,g6final:79,g7q1:80,g7q2:80,g7final:80,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123287130011',name:'TAPAYA, ARCHIEL GONJORAN',g1q1:89,g1q2:89,g1final:89,g2q1:83,g2q2:90,g2final:87,g3q1:81,g3q2:82,g3final:82,g4q1:85,g4q2:85,g4final:85,g5q1:89,g5q2:90,g5final:90,g6q1:89,g6q2:88,g6final:89,g7q1:85,g7q2:85,g7final:85,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123295130016',name:'TAPAYA, TRISTAN MARC EDEM',g1q1:81,g1q2:81,g1final:81,g2q1:80,g2q2:79,g2final:80,g3q1:75,g3q2:77,g3final:76,g4q1:78,g4q2:80,g4final:79,g5q1:75,g5q2:75,g5final:75,g6q1:75,g6q2:76,g6final:76,g7q1:76,g7q2:77,g7final:77,g8q1:80,g8q2:80,g8final:75,remarks:'YES'},
+      {id:'123290130009',name:'TRANGIA, RENZ JAY CASEÑARES',g1q1:82,g1q2:82,g1final:82,g2q1:80,g2q2:81,g2final:81,g3q1:78,g3q2:80,g3final:79,g4q1:82,g4q2:85,g4final:84,g5q1:75,g5q2:75,g5final:75,g6q1:83,g6q2:83,g6final:83,g7q1:75,g7q2:75,g7final:75,g8q1:95,g8q2:95,g8final:95,remarks:'YES'},
+      {id:'123285130064',name:'URBANEJA, CRISVIN ABET',g1q1:75,g1q2:75,g1final:75,g2q1:84,g2q2:80,g2final:82,g3q1:80,g3q2:83,g3final:82,g4q1:82,g4q2:82,g4final:82,g5q1:75,g5q2:75,g5final:75,g6q1:83,g6q2:83,g6final:83,g7q1:80,g7q2:80,g7final:80,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285120011',name:'BATALIRAN, REA FRANCISCO',g1q1:83,g1q2:83,g1final:83,g2q1:88,g2q2:91,g2final:90,g3q1:77,g3q2:75,g3final:76,g4q1:85,g4q2:85,g4final:85,g5q1:77,g5q2:91,g5final:84,g6q1:79,g6q2:82,g6final:81,g7q1:76,g7q2:83,g7final:80,g8q1:97,g8q2:98,g8final:97,remarks:'YES'},
+      {id:'123285130022',name:'JALIMAO, JAINA LABARIÑO',g1q1:75,g1q2:75,g1final:75,g2q1:80,g2q2:80,g2final:80,g3q1:75,g3q2:75,g3final:75,g4q1:80,g4q2:81,g4final:81,g5q1:77,g5q2:91,g5final:84,g6q1:76,g6q2:78,g6final:77,g7q1:75,g7q2:75,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123287110013',name:'MANAHON, SHERILYN GEMINA',g1q1:88,g1q2:88,g1final:88,g2q1:85,g2q2:86,g2final:86,g3q1:82,g3q2:84,g3final:83,g4q1:86,g4q2:86,g4final:86,g5q1:77,g5q2:91,g5final:84,g6q1:89,g6q2:89,g6final:89,g7q1:82,g7q2:84,g7final:83,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285130072',name:'MATADOS, JONALYN PERIDO',g1q1:81,g1q2:78,g1final:80,g2q1:81,g2q2:80,g2final:81,g3q1:75,g3q2:75,g3final:75,g4q1:79,g4q2:80,g4final:80,g5q1:77,g5q2:91,g5final:84,g6q1:80,g6q2:82,g6final:81,g7q1:75,g7q2:75,g7final:75,g8q1:90,g8q2:90,g8final:90,remarks:'YES'},
+      {id:'123285130077',name:'PANIM, NICOLE DELA CRUZ',g1q1:91,g1q2:91,g1final:91,g2q1:90,g2q2:85,g2final:88,g3q1:87,g3q2:86,g3final:87,g4q1:87,g4q2:85,g4final:86,g5q1:80,g5q2:91,g5final:86,g6q1:89,g6q2:89,g6final:89,g7q1:85,g7q2:84,g7final:85,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'123285130078',name:'PRUDENCIADO, ALTHIA ME HILONGO',g1q1:87,g1q2:87,g1final:87,g2q1:89,g2q2:87,g2final:88,g3q1:89,g3q2:87,g3final:88,g4q1:87,g4q2:89,g4final:88,g5q1:80,g5q2:91,g5final:84,g6q1:89,g6q2:83,g6final:86,g7q1:88,g7q2:89,g7final:88,g8q1:97,g8q2:98,g8final:98,remarks:'YES'},
+      {id:'1232891300033',name:'PENIT, JAMAICA YORDAN',g1q1:75,g1q2:75,g1final:75,g2q1:76,g2q2:76,g2final:76,g3q1:75,g3q2:75,g3final:75,g4q1:82,g4q2:77,g4final:80,g5q1:77,g5q2:91,g5final:84,g6q1:77,g6q2:76,g6final:77,g7q1:75,g7q2:75,g7final:75,g8q1:95,g8q2:95,g8final:95,remarks:'YES'}
+    ];
+
+    const SECOND_SEMESTER_GRADES = [
+      {id:'123285120108',name:'ABILA, ROLANDO JR. CAHUTAY',s1q3:90,s1q4:86,s1final:88,s2q3:80,s2q4:81,s2final:81,s3q3:82,s3q4:80,s3final:81,s4q3:83,s4q4:80,s4final:82,s5q3:79,s5q4:80,s5final:80,s6q3:80,s6q4:84,s6final:82,s7q3:95,s7q4:90,s7final:93,s8q3:80,s8q4:85,s8final:83,finalAverage:84,generalAverage:84,remarks:'PASSED'},
+      {id:'123285120037',name:'ALVARADO, JOVANE RABASTO',s1q3:84,s1q4:75,s1final:80,s2q3:80,s2q4:83,s2final:82,s3q3:80,s3q4:80,s3final:80,s4q3:80,s4q4:79,s4final:80,s5q3:77,s5q4:78,s5final:78,s6q3:80,s6q4:83,s6final:82,s7q3:95,s7q4:90,s7final:93,s8q3:80,s8q4:84,s8final:82,finalAverage:82,generalAverage:81,remarks:'PASSED'},
+      {id:'123295130008',name:'BARTOLATA, KIT JOSHUA GUTIERREZ',s1q3:95,s1q4:80,s1final:88,s2q3:87,s2q4:87,s2final:87,s3q3:88,s3q4:87,s3final:88,s4q3:85,s4q4:85,s4final:85,s5q3:84,s5q4:91,s5final:88,s6q3:88,s6q4:89,s6final:89,s7q3:98,s7q4:97,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:90,generalAverage:90,remarks:'PASSED'},
+      {id:'123285110011',name:'BLANCA, R-JAY ATIPOLO',s1q3:92,s1q4:75,s1final:84,s2q3:76,s2q4:76,s2final:76,s3q3:76,s3q4:77,s3final:77,s4q3:75,s4q4:77,s4final:76,s5q3:75,s5q4:75,s5final:75,s6q3:78,s6q4:79,s6final:79,s7q3:98,s7q4:95,s7final:97,s8q3:80,s8q4:81,s8final:81,finalAverage:81,generalAverage:81,remarks:'PASSED'},
+      {id:'123285130016',name:'BRANZUELA, ELVAN JAN ROMERO',s1q3:84,s1q4:85,s1final:85,s2q3:87,s2q4:86,s2final:87,s3q3:84,s3q4:87,s3final:86,s4q3:83,s4q4:90,s4final:87,s5q3:83,s5q4:90,s5final:87,s6q3:83,s6q4:83,s6final:83,s7q3:98,s7q4:95,s7final:97,s8q3:97,s8q4:98,s8final:98,finalAverage:89,generalAverage:89,remarks:'PASSED'},
+      {id:'123285130019',name:'CATINGGAN, ALJUN BACUNAWA',s1q3:87,s1q4:84,s1final:86,s2q3:75,s2q4:76,s2final:76,s3q3:77,s3q4:79,s3final:78,s4q3:78,s4q4:79,s4final:79,s5q3:77,s5q4:78,s5final:78,s6q3:79,s6q4:76,s6final:78,s7q3:90,s7q4:95,s7final:93,s8q3:90,s8q4:90,s8final:90,finalAverage:82,generalAverage:81,remarks:'PASSED'},
+      {id:'123285130045',name:'COLLAMAT, AKIA CZIAN MOMPIL',s1q3:75,s1q4:75,s1final:75,s2q3:75,s2q4:75,s2final:75,s3q3:75,s3q4:75,s3final:75,s4q3:73,s4q4:77,s4final:75,s5q3:75,s5q4:75,s5final:75,s6q3:75,s6q4:75,s6final:75,s7q3:90,s7q4:95,s7final:93,s8q3:80,s8q4:80,s8final:80,finalAverage:78,generalAverage:78,remarks:'PASSED'},
+      {id:'123295130009',name:'DE LARA, JHONREY ESPINA',s1q3:77,s1q4:75,s1final:76,s2q3:74,s2q4:75,s2final:75,s3q3:74,s3q4:75,s3final:75,s4q3:74,s4q4:76,s4final:75,s5q3:75,s5q4:75,s5final:75,s6q3:75,s6q4:77,s6final:76,s7q3:90,s7q4:90,s7final:90,s8q3:80,s8q4:81,s8final:81,finalAverage:78,generalAverage:79,remarks:'PASSED'},
+      {id:'113494130023',name:'DELA PEÑA, MARC NIÑO CONEJOS',s1q3:85,s1q4:76,s1final:81,s2q3:80,s2q4:80,s2final:80,s3q3:82,s3q4:80,s3final:81,s4q3:78,s4q4:82,s4final:80,s5q3:82,s5q4:84,s5final:83,s6q3:80,s6q4:84,s6final:82,s7q3:97,s7q4:98,s7final:98,s8q3:98,s8q4:98,s8final:98,finalAverage:85,generalAverage:85,remarks:'PASSED'},
+      {id:'103222130066',name:'DIALINO, MANOLITO JR PALAD',s1q3:94,s1q4:77,s1final:86,s2q3:78,s2q4:80,s2final:79,s3q3:80,s3q4:79,s3final:80,s4q3:74,s4q4:75,s4final:75,s5q3:78,s5q4:87,s5final:83,s6q3:78,s6q4:82,s6final:80,s7q3:90,s7q4:95,s7final:93,s8q3:97,s8q4:98,s8final:98,finalAverage:84,generalAverage:84,remarks:'PASSED'},
+      {id:'123295120005',name:'LABARIÑO, JANNO CALLAO',s1q3:84,s1q4:78,s1final:81,s2q3:78,s2q4:79,s2final:79,s3q3:80,s3q4:78,s3final:79,s4q3:80,s4q4:78,s4final:79,s5q3:80,s5q4:83,s5final:82,s6q3:79,s6q4:78,s6final:79,s7q3:90,s7q4:95,s7final:93,s8q3:80,s8q4:81,s8final:81,finalAverage:82,generalAverage:81,remarks:'PASSED'},
+      {id:'123799140016',name:'LABAYDAN, MAC JAMES ODTUHAN',s1q3:91,s1q4:93,s1final:88,s2q3:81,s2q4:84,s2final:83,s3q3:87,s3q4:85,s3final:86,s4q3:85,s4q4:85,s4final:85,s5q3:87,s5q4:88,s5final:88,s6q3:83,s6q4:86,s6final:85,s7q3:98,s7q4:97,s7final:98,s8q3:98,s8q4:97,s8final:98,finalAverage:89,generalAverage:88,remarks:'PASSED'},
+      {id:'123285130056',name:'MATADOS, MCKRIEGER VHINS PRUDENCIADO',s1q3:91,s1q4:93,s1final:86,s2q3:84,s2q4:86,s2final:85,s3q3:84,s3q4:89,s3final:87,s4q3:80,s4q4:83,s4final:82,s5q3:84,s5q4:93,s5final:89,s6q3:81,s6q4:84,s6final:83,s7q3:97,s7q4:98,s7final:98,s8q3:98,s8q4:98,s8final:98,finalAverage:89,generalAverage:88,remarks:'PASSED'},
+      {id:'123290130007',name:'MENDOZA, DAVID AXCEL BELARMINO',s1q3:78,s1q4:75,s1final:77,s2q3:74,s2q4:75,s2final:75,s3q3:74,s3q4:77,s3final:75,s4q3:74,s4q4:76,s4final:75,s5q3:75,s5q4:75,s5final:75,s6q3:74,s6q4:75,s6final:75,s7q3:90,s7q4:90,s7final:90,s8q3:80,s8q4:80,s8final:80,finalAverage:78,generalAverage:77,remarks:'PASSED'},
+      {id:'123287120043',name:'MERINO, CARLO ROQUERO',s1q3:84,s1q4:75,s1final:80,s2q3:74,s2q4:75,s2final:75,s3q3:74,s3q4:75,s3final:75,s4q3:75,s4q4:77,s4final:76,s5q3:75,s5q4:79,s5final:77,s6q3:74,s6q4:75,s6final:75,s7q3:75,s7q4:80,s7final:78,s8q3:90,s8q4:90,s8final:90,finalAverage:78,generalAverage:78,remarks:'PASSED'},
+      {id:'123287130009',name:'MERINO, JAY MARK MONIÑO',s1q3:79,s1q4:75,s1final:77,s2q3:82,s2q4:79,s2final:81,s3q3:79,s3q4:81,s3final:80,s4q3:74,s4q4:77,s4final:76,s5q3:75,s5q4:76,s5final:76,s6q3:80,s6q4:80,s6final:80,s7q3:90,s7q4:90,s7final:90,s8q3:80,s8q4:81,s8final:81,finalAverage:80,generalAverage:80,remarks:'PASSED'},
+      {id:'123285130057',name:'MERINO, JHODEL VERSOZA',s1q3:84,s1q4:75,s1final:80,s2q3:79,s2q4:81,s2final:80,s3q3:82,s3q4:79,s3final:81,s4q3:78,s4q4:78,s4final:78,s5q3:79,s5q4:78,s5final:78,s6q3:80,s6q4:80,s6final:80,s7q3:90,s7q4:90,s7final:90,s8q3:90,s8q4:95,s8final:93,finalAverage:83,generalAverage:82,remarks:'PASSED'},
+      {id:'123285130058',name:'MERINO, MARTIN ALVARADO',s1q3:75,s1q4:75,s1final:75,s2q3:74,s2q4:75,s2final:75,s3q3:75,s3q4:75,s3final:75,s4q3:75,s4q4:76,s4final:76,s5q3:76,s5q4:75,s5final:76,s6q3:75,s6q4:76,s6final:76,s7q3:97,s7q4:90,s7final:94,s8q3:80,s8q4:80,s8final:80,finalAverage:78,generalAverage:77,remarks:'PASSED'},
+      {id:'123290110017',name:'MONSANTO, IVAN MATIS',s1q3:82,s1q4:75,s1final:79,s2q3:79,s2q4:81,s2final:80,s3q3:80,s3q4:79,s3final:80,s4q3:83,s4q4:82,s4final:83,s5q3:79,s5q4:82,s5final:81,s6q3:79,s6q4:79,s6final:79,s7q3:98,s7q4:95,s7final:97,s8q3:90,s8q4:90,s8final:90,finalAverage:84,generalAverage:83,remarks:'PASSED'},
+      {id:'123285130028',name:'ORBESO, JHUN LEONEL VERBO',s1q3:96,s1q4:95,s1final:96,s2q3:93,s2q4:91,s2final:92,s3q3:93,s3q4:92,s3final:93,s4q3:90,s4q4:90,s4final:90,s5q3:93,s5q4:95,s5final:96,s6q3:92,s6q4:93,s6final:93,s7q3:97,s7q4:98,s7final:98,s8q3:98,s8q4:98,s8final:98,finalAverage:94,generalAverage:95,remarks:'PASSED'},
+      {id:'123285120117',name:'PAÑA, RAYMUND TAMAYO',s1q3:94,s1q4:75,s1final:85,s2q3:81,s2q4:85,s2final:83,s3q3:81,s3q4:84,s3final:83,s4q3:78,s4q4:85,s4final:82,s5q3:84,s5q4:85,s5final:85,s6q3:80,s6q4:80,s6final:80,s7q3:97,s7q4:95,s7final:96,s8q3:97,s8q4:98,s8final:98,finalAverage:87,generalAverage:86,remarks:'PASSED'},
+      {id:'158538140111',name:'ROSIALDA JR, EDITO ESPINOSA',s1q3:83,s1q4:75,s1final:79,s2q3:78,s2q4:79,s2final:79,s3q3:80,s3q4:79,s3final:80,s4q3:75,s4q4:81,s4final:78,s5q3:75,s5q4:80,s5final:78,s6q3:79,s6q4:79,s6final:79,s7q3:97,s7q4:95,s7final:96,s8q3:97,s8q4:98,s8final:98,finalAverage:83,generalAverage:82,remarks:'PASSED'},
+      {id:'123285120087',name:'TAMAYO, JARENT CANE BELAGUIN',s1q3:79,s1q4:75,s1final:77,s2q3:82,s2q4:79,s2final:81,s3q3:82,s3q4:79,s3final:81,s4q3:77,s4q4:80,s4final:79,s5q3:81,s5q4:86,s5final:84,s6q3:80,s6q4:80,s6final:80,s7q3:97,s7q4:98,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:85,generalAverage:84,remarks:'PASSED'},
+      {id:'123287130011',name:'TAPAYA, ARCHIEL GONJORAN',s1q3:95,s1q4:75,s1final:85,s2q3:82,s2q4:84,s2final:83,s3q3:85,s3q4:83,s3final:81,s4q3:81,s4q4:83,s4final:82,s5q3:82,s5q4:85,s5final:84,s6q3:80,s6q4:80,s6final:80,s7q3:98,s7q4:95,s7final:97,s8q3:97,s8q4:98,s8final:98,finalAverage:86,generalAverage:87,remarks:'PASSED'},
+      {id:'123295130016',name:'TAPAYA, TRISTAN MARC EDEM',s1q3:84,s1q4:75,s1final:80,s2q3:74,s2q4:75,s2final:75,s3q3:74,s3q4:75,s3final:75,s4q3:76,s4q4:78,s4final:77,s5q3:77,s5q4:75,s5final:76,s6q3:75,s6q4:75,s6final:75,s7q3:90,s7q4:95,s7final:93,s8q3:80,s8q4:81,s8final:81,finalAverage:79,generalAverage:79,remarks:'PASSED'},
+      {id:'123290130009',name:'TRANGIA, RENZ JAY CASEÑARES',s1q3:89,s1q4:75,s1final:82,s2q3:79,s2q4:80,s2final:80,s3q3:85,s3q4:87,s3final:86,s4q3:82,s4q4:80,s4final:81,s5q3:80,s5q4:81,s5final:81,s6q3:85,s6q4:80,s6final:83,s7q3:90,s7q4:95,s7final:93,s8q3:97,s8q4:98,s8final:98,finalAverage:86,generalAverage:84,remarks:'PASSED'},
+      {id:'123285130064',name:'URBANEJA, CRISVIN ABET',s1q3:81,s1q4:75,s1final:78,s2q3:78,s2q4:80,s2final:79,s3q3:79,s3q4:80,s3final:80,s4q3:80,s4q4:83,s4final:82,s5q3:80,s5q4:87,s5final:84,s6q3:79,s6q4:83,s6final:81,s7q3:98,s7q4:95,s7final:97,s8q3:97,s8q4:98,s8final:98,finalAverage:85,generalAverage:84,remarks:'PASSED'},
+      {id:'123285120011',name:'BATALIRAN, REA FRANCISCO',s1q3:86,s1q4:75,s1final:81,s2q3:80,s2q4:83,s2final:82,s3q3:80,s3q4:83,s3final:82,s4q3:80,s4q4:84,s4final:82,s5q3:78,s5q4:81,s5final:80,s6q3:80,s6q4:82,s6final:81,s7q3:97,s7q4:98,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:86,generalAverage:86,remarks:'PASSED'},
+      {id:'123285130022',name:'JALIMAO, JAINA LABARIÑO',s1q3:82,s1q4:75,s1final:79,s2q3:82,s2q4:85,s2final:84,s3q3:78,s3q4:80,s3final:79,s4q3:80,s4q4:80,s4final:80,s5q3:80,s5q4:81,s5final:81,s6q3:79,s6q4:82,s6final:81,s7q3:95,s7q4:90,s7final:93,s8q3:90,s8q4:90,s8final:90,finalAverage:83,generalAverage:82,remarks:'PASSED'},
+      {id:'123287110013',name:'MANAHON, SHERILYN GEMINA',s1q3:95,s1q4:75,s1final:85,s2q3:81,s2q4:84,s2final:83,s3q3:81,s3q4:84,s3final:83,s4q3:85,s4q4:87,s4final:86,s5q3:80,s5q4:83,s5final:82,s6q3:84,s6q4:87,s6final:86,s7q3:97,s7q4:98,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:88,generalAverage:88,remarks:'PASSED'},
+      {id:'123285130072',name:'MATADOS, JONALYN PERIDO',s1q3:88,s1q4:72,s1final:80,s2q3:82,s2q4:85,s2final:84,s3q3:80,s3q4:84,s3final:82,s4q3:82,s4q4:80,s4final:81,s5q3:77,s5q4:77,s5final:77,s6q3:81,s6q4:84,s6final:83,s7q3:90,s7q4:90,s7final:90,s8q3:85,s8q4:90,s8final:88,finalAverage:83,generalAverage:82,remarks:'PASSED'},
+      {id:'123285130077',name:'PANIM, NICOLE DELA CRUZ',s1q3:93,s1q4:80,s1final:85,s2q3:81,s2q4:87,s2final:84,s3q3:81,s3q4:88,s3final:85,s4q3:80,s4q4:87,s4final:84,s5q3:80,s5q4:83,s5final:82,s6q3:80,s6q4:82,s6final:81,s7q3:97,s7q4:98,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:87,generalAverage:88,remarks:'PASSED'},
+      {id:'123285130078',name:'PRUDENCIADO, ALTHIA ME HILONGO',s1q3:92,s1q4:85,s1final:89,s2q3:85,s2q4:84,s2final:85,s3q3:84,s3q4:88,s3final:86,s4q3:82,s4q4:87,s4final:85,s5q3:87,s5q4:89,s5final:88,s6q3:89,s6q4:88,s6final:89,s7q3:97,s7q4:98,s7final:98,s8q3:97,s8q4:98,s8final:98,finalAverage:90,generalAverage:90,remarks:'PASSED'},
+    ];
+
+    function mergeSemesterData(firstList, secondList) {
+      const map = new Map();
+      firstList.forEach(student => map.set(student.id, { ...student }));
+      secondList.forEach(student => {
+        const existing = map.get(student.id) || { id: student.id };
+        map.set(student.id, { ...existing, ...student });
+      });
+      return Array.from(map.values());
+    }
+
+    const DEFAULT_DATA = mergeSemesterData(INITIAL_GRADES, SECOND_SEMESTER_GRADES);
+    let gradesData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
+    if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(gradesData));
+
+    function isValidNumber(value) {
+      return value !== null && value !== '' && value !== undefined && !Number.isNaN(Number(value));
+    }
+
+    function roundDisplay(value) {
+      return isValidNumber(value) ? Number(value).toFixed(2) : '--';
+    }
+
+    function normalizeLRN(value) {
+      return String(value || '').replace(/\D/g, '');
+    }
+
+    function checkGrades() {
+      const input = document.getElementById('studentNumber');
+      const errorMsg = document.getElementById('lookupError');
+      const typedValue = input.value.trim();
+      const normalizedInput = normalizeLRN(typedValue);
+
+      errorMsg.style.display = 'none';
+
+      if (!normalizedInput) {
+        errorMsg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Please enter a valid LRN.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      const student = gradesData.find(s => normalizeLRN(s.id) === normalizedInput);
+      if (student) openGradeOverlay(student);
+      else {
+        errorMsg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> LRN not found.';
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    let editingStudentId = null;
+    let activeSemester = 'first';
+
+    function getFirstSemAverage(s) {
+      let sum = 0, count = 0;
+      for (let i = 1; i <= 8; i++) {
+        const val = Number(s['g' + i + 'final']);
+        if (val > 0) { sum += val; count++; }
+      }
+      return count ? Number((sum / count).toFixed(2)) : null;
+    }
+
+    function getSecondSemAverage(s) {
+      if (isValidNumber(s.finalAverage)) return Number(s.finalAverage);
+      let sum = 0, count = 0;
+      for (let i = 1; i <= 8; i++) {
+        const val = Number(s['s' + i + 'final']);
+        if (isValidNumber(val) && val > 0) { sum += val; count++; }
+      }
+      return count ? Number((sum / count).toFixed(2)) : null;
+    }
+
+    function computeAverage(s) {
+      if (isValidNumber(s.generalAverage)) return Number(s.generalAverage).toFixed(2);
+      const first = getFirstSemAverage(s);
+      const second = getSecondSemAverage(s);
+      const values = [first, second].filter(v => v !== null);
+      if (!values.length) return '0.00';
+      return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
+    }
+
+    function openGradeOverlay(student, isEditing = false) {
+      editingStudentId = isEditing ? student.id : null;
+      activeSemester = 'first';
+      document.getElementById('dashTitle').innerText = student.name;
+      document.getElementById('dashStudentId').innerText = `ID: ${student.id}`;
+      document.getElementById('avatarInitials').innerText = student.name.substring(0, 2).toUpperCase();
+
+      const firstAvg = getFirstSemAverage(student);
+      const secondAvg = getSecondSemAverage(student);
+      const avg = computeAverage(student);
+      const avgNum = parseFloat(avg);
+
+      document.getElementById('firstSemAvg').innerText = roundDisplay(firstAvg);
+      document.getElementById('secondSemAvg').innerText = roundDisplay(secondAvg);
+
+      const avgEl = document.getElementById('avgGrade');
+      avgEl.innerText = avg;
+      avgEl.className = avgNum >= 75 ? 'stat-value good' : 'stat-value bad';
+      
+      const badge = document.getElementById('statusBadge');
+      badge.innerText = avgNum >= 75 ? 'PASS' : 'FAIL';
+      badge.style.color = avgNum >= 75 ? 'var(--success)' : 'var(--danger)';
+      
+      document.getElementById('remarks').innerText = student.remarks || 'N/A';
+      document.getElementById('asOf').innerText = `Updated: ${new Date().toLocaleDateString()}`;
+
+      const controls = document.getElementById('adminEditControls');
+      controls.className = (isAdminLogged() && isEditing) ? '' : 'hidden';
+
+      renderSemesterTable(student, isEditing);
+      document.getElementById('gradeOverlay').classList.add('show');
+    }
+
+    function renderSemesterTable(student, isEditing = false) {
+      const isFirst = activeSemester === 'first';
+      const tbody = document.getElementById('gradesTableBody');
+      const q1Head = document.getElementById('quarterOneHead');
+      const q2Head = document.getElementById('quarterTwoHead');
+      const semLabel = document.getElementById('semesterLabel');
+      const tabFirst = document.getElementById('tabFirst');
+      const tabSecond = document.getElementById('tabSecond');
+
+      q1Head.innerText = isFirst ? 'Q1' : 'Q3';
+      q2Head.innerText = isFirst ? 'Q2' : 'Q4';
+      semLabel.innerText = isFirst ? 'Showing First Semester' : 'Showing Second Semester';
+
+      tabFirst.className = isFirst ? 'btn btn-primary' : 'btn btn-ghost';
+      tabSecond.className = isFirst ? 'btn btn-ghost' : 'btn btn-primary';
+      tabFirst.style.padding = '6px 12px';
+      tabSecond.style.padding = '6px 12px';
+      tabFirst.style.fontSize = '12px';
+      tabSecond.style.fontSize = '12px';
+
+      tbody.innerHTML = '';
+      const subjects = isFirst ? FIRST_SEM_SUBJECTS : SECOND_SEM_SUBJECTS;
+
+      subjects.forEach((subj, index) => {
+        const i = index + 1;
+        const prefix = isFirst ? 'g' : 's';
+        const qA = isFirst ? prefix + i + 'q1' : prefix + i + 'q3';
+        const qB = isFirst ? prefix + i + 'q2' : prefix + i + 'q4';
+        const finalK = prefix + i + 'final';
+        const row = document.createElement('tr');
+
+        const createCell = (key) => {
+          const raw = student[key];
+          const val = isValidNumber(raw) ? Number(raw) : null;
+          return isEditing 
+            ? `<input class="edit-input" data-field="${key}" value="${val ?? ''}" type="number">`
+            : `<span style="color:${val !== null && val < 75 ? 'var(--danger)' : '#fff'}; font-weight:600">${val !== null ? val : '-'}</span>`;
+        };
+
+        row.innerHTML = `<td>${subj}</td><td>${createCell(qA)}</td><td>${createCell(qB)}</td><td>${createCell(finalK)}</td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function switchSemester(semester) {
+      activeSemester = semester;
+      const idText = document.getElementById('dashStudentId').innerText.replace('ID: ', '').trim();
+      const student = gradesData.find(x => String(x.id) === idText);
+      if (student) renderSemesterTable(student, !!editingStudentId);
+    }
+
+    function closeOverlay() {
+      document.getElementById('gradeOverlay').classList.remove('show');
+      editingStudentId = null;
+      activeSemester = 'first';
+    }
+
+    const KNOWLEDGE_BASE = [
+      { keys: ['grade', 'score', 'average', 'passing'], response: "To view your grades, enter your Student ID in the search box on the dashboard. Passing grade is 75." },
+      { keys: ['coc 1', 'coc1', 'systems', 'install'], response: "COC 1 covers <b>Installing and Configuring Computer Systems</b>." },
+      { keys: ['coc 2', 'coc2', 'setup', 'network'], response: "COC 2 focuses on <b>Setting Up Computer Networks</b>." },
+      { keys: ['coc 3', 'coc3', 'server'], response: "COC 3 is about <b>Setting Up Computer Servers</b>." },
+      { keys: ['coc 4', 'coc4', 'maintain', 'repair'], response: "COC 4 focuses on <b>Maintaining and Repairing Computer Systems and Networks</b>." },
+      { keys: ['hello', 'hi', 'hey'], response: "Hello! How can I help you today?" }
+    ];
+
+    function toggleChatbot() {
+      document.getElementById('chatbotWindow').classList.toggle('open');
+    }
+
+    function addChatMessage(type, content) {
+      const box = document.getElementById('chatbotMessages');
+      const div = document.createElement('div');
+      div.className = `chat-msg ${type === 'bot' ? 'msg-bot' : 'msg-user'}`;
+      div.innerHTML = content;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatbotInput');
+      const message = input.value.trim();
+      if (!message) return;
+      addChatMessage('user', message);
+      input.value = '';
+
+      const lower = message.toLowerCase();
+      const match = KNOWLEDGE_BASE.find(item => item.keys.some(key => lower.includes(key)));
+      const reply = match ? match.response : "Sorry, I can only answer questions about grades, COC modules, and CSS topics.";
+      setTimeout(() => addChatMessage('bot', reply), 400);
+    }
+
+    document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function isAdminLogged() { return localStorage.getItem('isAdmin') === 'true'; }
+
+    function updateAdminUI() {
+      const btn = document.getElementById('adminBtn');
+      if (isAdminLogged()) {
+        btn.innerHTML = '<i class="fa-solid fa-unlock"></i> Panel';
+        btn.style.color = 'var(--primary)';
+        btn.style.borderColor = 'var(--primary)';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Admin';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }
+    }
+
+    function openAdmin() {
+      if (isAdminLogged()) showAdminPanel();
+      else {
+        document.getElementById('adminLoginOverlay').classList.add('show');
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+        document.getElementById('adminLoginError').style.display = 'none';
+      }
+    }
+
+    function adminLogin() {
+      const u = document.getElementById('adminUser').value;
+      const p = document.getElementById('adminPass').value;
+      if ((u === 'admin' || u === 'AdministratorCSS') && p === 'admin123') {
+        localStorage.setItem('isAdmin', 'true');
+        closeAdminLogin();
+        updateAdminUI();
+        showAdminPanel();
+      } else {
+        document.getElementById('adminLoginError').style.display = 'block';
+      }
+    }
+
+    function closeAdminLogin() { document.getElementById('adminLoginOverlay').classList.remove('show'); }
+    function logout() { localStorage.removeItem('isAdmin'); window.location.href = 'index.html'; }
+    
+    function showAdminPanel() {
+      document.getElementById('adminPanelOverlay').classList.add('show');
+      renderStudentList();
+      renderLessons();
+      renderProgress();
+    }
+    function closeAdminPanel() { document.getElementById('adminPanelOverlay').classList.remove('show'); }
+
+    function renderStudentList() {
+      const tbody = document.getElementById('studentManageTable');
+      tbody.innerHTML = '';
+      gradesData.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family:monospace; color:var(--primary)">${s.id}</td>
+          <td>${(s.name || '').split(',')[0]}</td>
+          <td>${computeAverage(s)}</td>
+          <td><button class="btn btn-ghost" style="padding:4px 8px; font-size:11px" onclick="editStudent('${s.id}')">Edit</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editStudent(id) {
+      closeAdminPanel();
+      const s = gradesData.find(x => x.id === id);
+      openGradeOverlay(s, true);
+    }
+
+    function saveEditedGrades() {
+      if (!editingStudentId) return;
+      const s = gradesData.find(x => x.id === editingStudentId);
+      const inputs = document.querySelectorAll('.edit-input');
+      inputs.forEach(inp => {
+        const val = parseFloat(inp.value);
+        if (!isNaN(val)) s[inp.dataset.field] = val;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gradesData));
+      alert('Grades saved!');
+      openGradeOverlay(s, false);
+    }
+
+    function cancelEditMode() {
+      if (!editingStudentId) { closeOverlay(); return; }
+      const s = gradesData.find(x => x.id === editingStudentId);
+      openGradeOverlay(s, false);
+    }
+
+    function adminUploadLesson() {
+      const f = document.getElementById('lessonFileInput').files[0];
+      if (f) {
+        const list = JSON.parse(localStorage.getItem('lessons') || '[]');
+        list.unshift({ name: f.name, date: new Date().toLocaleDateString() });
+        localStorage.setItem('lessons', JSON.stringify(list));
+        renderLessons();
+      }
+    }
+
+    function renderLessons() {
+      const list = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const ul = document.getElementById('lessonsList');
+      ul.innerHTML = list.length ? '' : '<li>No uploads yet.</li>';
+      list.forEach(l => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fa-solid fa-file"></i> ${l.name} <span style="font-size:10px; opacity:0.6; margin-left:5px;">${l.date}</span>`;
+        li.style.marginTop = '8px';
+        ul.appendChild(li);
+      });
+    }
+
+    function renderProgress() {
+      const div = document.getElementById('progressList');
+      div.innerHTML = '';
+      gradesData.forEach(s => {
+        const avg = parseFloat(computeAverage(s));
+        const bar = document.createElement('div');
+        bar.style.marginBottom = '12px';
+        bar.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px">
+            <span>${(s.name || '').split(',')[0]}</span>
+            <span>${avg}%</span>
+          </div>
+          <div style="background:#333; height:6px; border-radius:3px; overflow:hidden">
+            <div style="width:${avg}%; background:${avg >= 75 ? 'var(--success)' : 'var(--danger)'}; height:100%"></div>
+          </div>
+        `;
+        div.appendChild(bar);
+      });
+    }
+
+    function openAddStudentModal() {
+      document.getElementById('adminPanelOverlay').classList.remove('show'); 
+      document.getElementById('newStudentId').value = '';
+      document.getElementById('newStudentLast').value = '';
+      document.getElementById('newStudentFirst').value = '';
+      document.getElementById('addStudentError').style.display = 'none';
+      document.getElementById('addStudentOverlay').classList.add('show');
+    }
+
+    function closeAddStudentModal() {
+      document.getElementById('addStudentOverlay').classList.remove('show');
+      document.getElementById('adminPanelOverlay').classList.add('show');
+    }
+
+    function submitNewStudent() {
+      const id = document.getElementById('newStudentId').value.trim();
+      const last = document.getElementById('newStudentLast').value.trim().toUpperCase();
+      const first = document.getElementById('newStudentFirst').value.trim().toUpperCase();
+      const err = document.getElementById('addStudentError');
+
+      if (!id || !last || !first) {
+        err.innerText = "All fields are required.";
+        err.style.display = 'block';
+        return;
+      }
+
+      const exists = gradesData.some(s => s.id === id);
+      if (exists) {
+        err.innerText = "Student ID already exists.";
+        err.style.display = 'block';
+        return;
+      }
+
+      const newStudent = {
+        id: id,
+        name: `${last}, ${first}`,
+        remarks: 'YES'
+      };
+
+      for (let i = 1; i <= 8; i++) {
+        newStudent['g' + i + 'q1'] = 0;
+        newStudent['g' + i + 'q2'] = 0;
+        newStudent['g' + i + 'final'] = 0;
+        newStudent['s' + i + 'q3'] = 0;
+        newStudent['s' + i + 'q4'] = 0;
+        newStudent['s' + i + 'final'] = 0;
+      }
+      newStudent.finalAverage = 0;
+      newStudent.generalAverage = 0;
+
+      gradesData.push(newStudent);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(gradesData));
+      closeAddStudentModal();
+      showAdminPanel();
+    }
+
+    document.getElementById('studentNumber').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') checkGrades();
+    });
+
+    updateAdminUI();
+  </script>
+</body>
+</html>
