@@ -505,7 +505,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'css_nc2_data_v3';
+    const STORAGE_KEY = 'css_nc2_data_v4';
     const FIRST_SEM_SUBJECTS = [
       "Intro to Philosophy", "Contemp. Arts", "Understanding Culture",
       "PE & Health", "Practical Research 2", "Filipino sa Piling Larang",
@@ -602,9 +602,23 @@
       return Array.from(map.values());
     }
 
+    function overlaySavedData(savedList, defaultList) {
+      if (!Array.isArray(savedList) || !savedList.length) return defaultList;
+      const savedMap = new Map(savedList.map(student => [student.id, student]));
+      const merged = defaultList.map(student => {
+        const saved = savedMap.get(student.id);
+        return saved ? { ...student, ...saved } : student;
+      });
+      savedList.forEach(student => {
+        if (!merged.find(item => item.id === student.id)) merged.push(student);
+      });
+      return merged;
+    }
+
     const DEFAULT_DATA = mergeSemesterData(INITIAL_GRADES, SECOND_SEMESTER_GRADES);
-    let gradesData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA;
-    if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(gradesData));
+    const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    let gradesData = overlaySavedData(savedData, DEFAULT_DATA);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gradesData));
 
     function isValidNumber(value) {
       return value !== null && value !== '' && value !== undefined && !Number.isNaN(Number(value));
